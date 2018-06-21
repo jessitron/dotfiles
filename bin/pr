@@ -1,0 +1,54 @@
+#!/bin/bash
+
+new_branch=$1
+commit_message=$2
+
+default_branch="master"
+
+current_branch=$(git rev-parse --abbrev-ref HEAD)
+if [[ $? -ne 0 ]]
+then
+    echo "I can't even determine the current branch, everything is hosed"
+    exit 1
+fi
+
+if [[ ( -z "$new_branch" ) && ( "$current_branch" != "$default_branch" ) ]]
+then
+   # we didn't specify a branch but we are on one
+    branch="$current_branch"
+else
+    branch="nortissej/$new_branch"
+fi
+
+if (git rev-parse $branch 2>/dev/null) then
+	git checkout $branch
+    if [[ $? -ne 0 ]]
+    then
+        echo "checkout branch failed"
+        exit 1
+    fi
+else
+    git checkout -b $branch
+    if [[ $? -ne 0 ]]
+    then
+        echo "checkout new branch failed"
+        exit 1
+    fi
+fi
+
+if [[ -n "$(git status --porcelain)" ]]
+then
+  if [ -z "$2" ]
+  then
+    echo "usage: pr BRANCH MESSAGE"
+    exit 1
+  fi
+
+  git add .
+  git commit -m "$2"
+fi
+
+git push -u origin $branch
+
+repo_url=$( git config --get remote.origin.url | sed 's#.*:#https://github.com/#' | sed 's/.git$//' )
+open $repo_url/compare/$branch?expand=1

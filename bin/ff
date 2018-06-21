@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+STASH=false
+if [[ -n $(git status --porcelain) ]]
+then
+   echo "stashing changes"
+   STASH=true
+   git stash save ff
+fi
+
+git checkout master
+
+git fetch --prune 2>&1 | grep -v '+travis'
+# delete all the irritating tags from Travis
+git tag | grep travis | xargs git tag -d > /dev/null
+
+# pop a window showing me what I just retrieved
+github-diff master origin/master
+
+git diff --quiet origin/master package-lock.json
+package_json_diff=$?
+
+git merge --ff-only
+if [[ $? -ne 0 ]]
+	then
+	echo " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ "
+	echo "          YOUR MASTER IS WEIRD"
+	echo " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ "
+
+fi
+git checkout -
+
+if [[ "${STASH}" = "true" ]]
+then
+  git stash pop
+fi
+
+if [[ $package_json_diff -eq 1 ]]
+then
+	echo "package.json has changed"
+    if [[ $(git rev-parse --abbrev-ref HEAD) == "master" ]]
+    then
+    	npm install
+    else
+    	echo "don't forget to npm install when you merge or switch to master"
+    fi
+fi

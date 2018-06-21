@@ -1,0 +1,39 @@
+#!/bin/bash
+
+start_ref=$1
+end_ref=$2
+
+if [[ -z $end_ref ]] ; then
+   echo "USAGE: github-diff <ref> <ref>"
+   exit 1
+fi
+
+start_sha=$(git rev-parse $start_ref)
+if [[ $? -ne 0 ]]; then
+   echo "not a ref? $start_ref"
+   exit 1
+fi
+
+end_sha=$(git rev-parse $end_ref)
+if [[ $? -ne 0 ]]; then
+   echo "not a ref? $end_ref"
+   exit 1
+fi
+
+if [[ $start_sha == $end_sha ]] ; then
+   echo "No changes between $start_ref and $end_ref"
+   exit 0
+fi
+
+origin_url=$(git remote get-url origin)
+
+# echo "Origin is at: $origin_url"
+
+read org_name repo_name <<< $(echo $origin_url | sed -E 's#^.*[:/](.+)/([^.]+)(.git)?$#\1 \2#')
+
+# echo "Org: $org_name"
+# echo "Repo: $repo_name"
+
+github_diff_url="https://github.com/$org_name/$repo_name/compare/$start_sha...$end_sha?w=1"
+
+open $github_diff_url
