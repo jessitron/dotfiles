@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+origin_branches=$(git branch --list -a 'origin/*' | sed 's# *remotes/\([^ ]*\).*$#\1#')
+
+echo "branches: " $origin_branches
+
+thing=$(for branch in $origin_branches
+do
+   echo $(git log $branch --pretty='format:%Cred%cd %C(yellow)%cn %Creset%H' --date=iso8601 | grep -v "Atomist Bot" | head -1) $branch
+done | sort -n | sed 's/.*\([0-9a-f]\{40\}\) \(.*\)/\1-\2/' )
+
+echo "thing: " $thing
+
+for line in $thing
+do
+	sha=$(echo $line | sed 's/.*\([0-9a-f]{40}\).*/\1/' )
+#	echo $sha
+done
