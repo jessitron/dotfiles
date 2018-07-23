@@ -127,7 +127,7 @@ function get() {
 
    if [[ -e "package.json" ]]
    then
-   	  npm install
+   	  npm ci
    fi
    else
 	echo "That didn't work"
