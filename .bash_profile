@@ -161,6 +161,10 @@ function be {
   if [ "$where" == "lifecycle" ] ; then
   	where="lifecycle-automation"
   fi
+  if echo $where | grep -e '-pack$' ; then
+  	which_pack=$(echo $where | sed 's/-pack//')
+  	where="sdm-pack-$which_pack"
+  fi
 
   # check my favorite directories
   for dir in $(cat ~/.be_dirs); do

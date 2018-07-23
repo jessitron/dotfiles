@@ -10,9 +10,9 @@ fi
 
 git checkout master
 
-git fetch --prune 2>&1 | grep -v '+travis'
-# delete all the irritating tags from Travis
-git tag | grep travis | xargs git tag -d > /dev/null
+git fetch --prune 2>&1 | grep -v '+'
+# delete half of the irritating tags from our build
+git tag | grep '+' | xargs git tag -d > /dev/null
 
 # pop a window showing me what I just retrieved
 github-diff master origin/master
