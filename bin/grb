@@ -4,15 +4,19 @@ origin_branches=$(git branch --list -a 'origin/*' | sed 's# *remotes/\([^ ]*\).*
 
 echo "branches: " $origin_branches
 
-thing=$(for branch in $origin_branches
+# sort by date, then take only the SHA
+interesting_shas=$(for branch in $origin_branches
 do
-   echo $(git log $branch --pretty='format:%Cred%cd %C(yellow)%cn %Creset%H' --date=iso8601 | grep -v "Atomist Bot" | head -1) $branch
-done | sort -n | sed 's/.*\([0-9a-f]\{40\}\) \(.*\)/\1-\2/' )
+	# get the first non-bot commit for the branch
+   git log $branch --pretty='format:%Cred%cd %C(yellow)%cn %Creset%H' --date=iso8601 | grep -v "Atomist Bot" | head -1
+done | sort -n | uniq | sed 's/.*\([0-9a-f]\{40\}\)/\1/' )
 
-echo "thing: " $thing
+echo "thing: " $interesting_shas
 
-for line in $thing
+# this assumes `favorite` is defined in git config:
+# pretty.favorite=format:%C(yellow)%h %C(green)%aN %C(red)%cr%C(auto)%d %s %C(red)%N
+for sha in $interesting_shas
 do
-	sha=$(echo $line | sed 's/.*\([0-9a-f]{40}\).*/\1/' )
+	git log -1 $sha --pretty=favorite
 #	echo $sha
 done
