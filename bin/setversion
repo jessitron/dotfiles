@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+
+atomist_lib=$1
+branch=$2
+
+#
+# Update a snapshot in package.json
+# This uses the branch- tag in npm, defaulting to branch-master
+#
+
+if [[ -z $atomist_lib ]]
+then
+   echo "Usage: $0 <atomist lib name> [branch]"
+   exit 1
+fi
+
+if [[ -z $branch ]]
+then
+   branch="master"
+fi
+
+existing_dep=$(grep "\"@atomist/$atomist_lib\": \".*-.*\"" package.json)
+if [[ -z $existing_dep ]]
+then
+   echo "No snapshot dependency on @atomist/$atomist_lib found in package.json"
+   exit 1
+fi
+
+
+command="npm view @atomist/$atomist_lib dist-tags.branch-$branch"
+snapshot=$( $command )
+
+if [[ $? -ne 0 ]]
+then
+   echo "Unable to determine version with $command"
+   exit 1
+fi
+
+if [[ -z $snapshot ]]
+then
+  echo "No tag branch-$branch found on @atomist/$atomist_lib"
+  exit 1
+fi
+
+echo "Updating @atomist/$atomist_lib to $snapshot"
+
+expr="s#\"@atomist/$atomist_lib\": \".*-.*\"#\"@atomist/$atomist_lib\": \"$snapshot\"#"
+infile=package.json
+outfile=package.json.new
+sed "$expr" $infile > $outfile
+if [ $? -eq 0 ]; then
+  mv $outfile $infile
+else
+  echo "substitution didn't work on $infile: $expr"
+fi
+
+
