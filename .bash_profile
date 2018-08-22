@@ -11,6 +11,8 @@ export GOPATH="$HOME/code/other/go"
 export PATH="$PATH:$HOME/bin:$GOPATH/bin"
 export PIP_REQUIRE_VIRTUALENV=true
 
+export ATOMIST_ROOT=$HOME/code
+
 # atomist teams
 export satellite_of_love=T1JVCMVH7
 export spring_team=T5964N9B7
@@ -41,17 +43,13 @@ alias glr='git ll $(git for-each-ref --sort=-committerdate --count=3 --format="%
 
 # reset to upstream
 alias grh='git reset --hard $(git rev-parse --abbrev-ref --symbolic-full-name @{u})'
-
+alias cm='git checkout master'
 
 alias botlogs='cd ~/kubes/staging &&  k logs $(kp | grep bot | cut -c1-30) | less'
 
 alias glcoud=gcloud
 
 alias cf-login='echo "Password is under pivotal in 1Password" && cf login -a api.run.pivotal.io -u jessitron@atomist.com -o atomist -s jessitron'
-
-alias new-rug='rug edit atomist:rug-rugs:AddTypeScriptEditor -IR'
-
-alias clean_js='rm $(find . -name "*.js" | grep -v -e "\/target\/" -e "\/node_modules\/")'
 
 alias sign='git commit --allow-empty -m "sign"'
 

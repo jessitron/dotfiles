@@ -18,9 +18,11 @@ if [[ -z $branch ]]
 then
    branch="master"
 fi
+branch=$(echo $branch | sed 's#/#-#g')
 
 existing_dep=$(grep "\"@atomist/$atomist_lib\": \".*-.*\"" package.json)
-if [[ -z $existing_dep ]]
+url_dep=$(grep "\"@atomist/$atomist_lib\": \"http.*\"" package.json)
+if [[ -z $existing_dep && -z $url_dep ]]
 then
    echo "No snapshot dependency on @atomist/$atomist_lib found in package.json"
    exit 1
@@ -44,14 +46,15 @@ fi
 
 echo "Updating @atomist/$atomist_lib to $snapshot"
 
-expr="s#\"@atomist/$atomist_lib\": \".*-.*\"#\"@atomist/$atomist_lib\": \"$snapshot\"#"
+expr="s#\"@atomist/$atomist_lib\": \"...*\"#\"@atomist/$atomist_lib\": \"$snapshot\"#"
 infile=package.json
 outfile=package.json.new
-sed "$expr" $infile > $outfile
-if [ $? -eq 0 ]; then
+
+if $(sed "$expr" $infile > $outfile)
+then
   mv $outfile $infile
 else
   echo "substitution didn't work on $infile: $expr"
 fi
 
-
+grep $atomist_lib package.json

@@ -15,7 +15,7 @@ git fetch --prune 2>&1 | grep -v '+'
 git tag | grep '+' | xargs git tag -d > /dev/null
 
 # pop a window showing me what I just retrieved
-github-diff master origin/master
+github-diff origin/master@{1} origin/master
 
 git diff --quiet origin/master package-lock.json
 package_json_diff=$?
@@ -40,7 +40,8 @@ then
 	echo "package.json has changed"
     if [[ $(git rev-parse --abbrev-ref HEAD) == "master" ]]
     then
-    	npm install
+        echo "on master branch; installing libraries"
+    	npm ci
     else
     	echo "don't forget to npm install when you merge or switch to master"
     fi
