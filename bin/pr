@@ -17,6 +17,11 @@ then
    # we didn't specify a branch but we are on one
     branch="$current_branch"
 else
+	if [[ -z "$new_branch" ]]
+	then
+		echo "Please provide a branch name";
+		exit 1;
+	fi
     branch="nortissej/$new_branch"
 fi
 
