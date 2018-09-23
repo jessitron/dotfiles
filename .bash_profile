@@ -90,6 +90,16 @@ function gp() {
     fi
 }
 
+function gpf() {
+	if git push -f
+	then
+      echo "yay"
+    else
+        repo=$(git remote get-url origin | sed 's/.*\///')
+    	alert "your push to $repo failed"
+    fi
+}
+
 # clone a repo
 function get() {
    repo=$1

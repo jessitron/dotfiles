@@ -14,6 +14,11 @@ then
    exit 1
 fi
 
+if [[ "$atomist_lib" == "client" ]]
+then
+   atomist_lib="automation-client"
+fi
+
 if [[ -z $branch ]]
 then
    branch="master"

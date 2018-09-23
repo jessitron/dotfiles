@@ -8,6 +8,8 @@ then
    git stash save ff
 fi
 
+origin_before=$(git rev-parse origin/master)
+
 git checkout master
 
 git fetch --prune 2>&1 | grep -v '+'
@@ -15,7 +17,7 @@ git fetch --prune 2>&1 | grep -v '+'
 git tag | grep '+' | xargs git tag -d > /dev/null
 
 # pop a window showing me what I just retrieved
-github-diff origin/master@{1} origin/master
+github-diff $origin_before origin/master
 
 git diff --quiet origin/master package-lock.json
 package_json_diff=$?
