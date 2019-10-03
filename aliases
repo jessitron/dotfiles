@@ -1,0 +1,8 @@
+
+alias bp='code ~/.bash_profile'
+alias reload='source ~/.bash_profile'
+
+alias gs='git status'
+alias gp='git push || echo "DAMMIT"'
+
+alias analyze-org='atomist analyze github 

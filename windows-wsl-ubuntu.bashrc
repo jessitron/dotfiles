@@ -1,3 +1,4 @@
+alias gs='git status'
 # ~/.bashrc: executed by bash(1) for non-login shells.
 # see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
 # for examples
@@ -112,14 +113,14 @@ else
 fi
 unset color_prompt force_color_prompt
 
-# If this is an xterm set the title to user@host:dir
-case "$TERM" in
-xterm*|rxvt*)
-    PS1="\[\e]0;${debian_chroot:+($debian_chroot)}boop: \w\a\]$PS1"
-    ;;
-*)
-    ;;
-esac
+title_content() {
+	echo $TITLE_CONTENT
+}
+
+ORIG_PS1=$PS1
+title() {
+    PS1="\[\e]0;$*	\a\]$ORIG_PS1"
+}
 
 # enable color support of ls and also add handy aliases
 if [ -x /usr/bin/dircolors ]; then
@@ -168,3 +169,48 @@ fi
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+# clone a repo
+function get() {
+   repo=$1
+   if [ -z "$2" ] # org not specified
+   then
+   	 org=$(pwd | sed 's#.*/##') # org is the current directory
+   else
+   	 org=$2
+   	 if [[ "$org" == "sol" ]]
+   	 then
+   	    org="satellite-of-love"
+   	 fi
+     cd ~/code # here is my place where I clone things
+     if [[ ! -d $org ]]
+     then
+       echo "Creating ~/code/$org"
+       mkdir $org
+     fi
+     cd $org 
+   fi
+   echo "cloning $org/$repo"
+   if git clone git@github.com:$org/$repo
+   then
+
+   cd $repo
+   title $repo
+
+   if [[ "$org" == "atomist" ]]
+   then
+     # cp ~/bin/resources/pre-push .git/hooks   # prevent accidental 
+     git config --local user.email "jessitron@atomist.com"
+   fi
+
+   if [[ -e "package.json" ]]
+   then
+   	  npm ci
+   fi
+   else
+	echo "That didn't work"
+   fi
+}
+
+
+source ~/dotfiles/aliases.sh
