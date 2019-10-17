@@ -205,6 +205,7 @@ function get() {
 
    if [[ -e "package.json" ]]
    then
+      code .
    	  npm ci
    fi
    else

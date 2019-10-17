@@ -1,7 +1,6 @@
 #!/bin/bash
 
 new_branch=$1
-commit_message=$2
 
 default_branch="master"
 
@@ -43,17 +42,11 @@ fi
 
 if [[ -n "$(git status --porcelain)" ]]
 then
-  if [ -z "$2" ]
-  then
-    echo "usage: pr BRANCH MESSAGE"
+    echo "Please make a commit or stash your changes. Clean your shit yo"
     exit 1
-  fi
-
-  git add .
-  git commit -m "$2"
 fi
 
 git push -u origin $branch
 
 repo_url=$( git config --get remote.origin.url | sed 's#git@github.com:#https://github.com/#' | sed 's/.git$//' )
-open $repo_url/compare/$branch?expand=1
+echo "Pull Request: $repo_url/compare/$branch?expand=1"
