@@ -58,9 +58,11 @@ Function GetRepoFromGitHub {
     }
     Set-Location -Path $ownerpath
 
-    if (git clone https://github.com/$Owner/$Repo) {
+    git clone https://github.com/$Owner/$Repo
+    if ($LastExitCode -eq 0) {
+        Write-Host "Moving to $repopath"
         Set-Location -Path $repopath
-    }
+    }   
     else {
         # TODO: delete newly created owner directory if the clone fails
     }

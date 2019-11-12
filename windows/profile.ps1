@@ -30,7 +30,7 @@ Function GitPush {
     if ($LastExitCode -ne 0) {
         $pwd = (Get-Location).toString()
         $wshell = New-Object -ComObject Wscript.Shell
-        $selection = $wshell.Popup("Your push failed in ${pwd}:`n$PushOutput", 0, "Ratfish", 0x1)
+        $wshell.Popup("Your push failed in ${pwd}:`n$PushOutput", 0, "Ratfish", 0x1)
     }
     else {
         Write-Host "Good job."
