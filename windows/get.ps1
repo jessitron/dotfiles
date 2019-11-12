@@ -1,6 +1,6 @@
 # Does this work?
 
-Write-Host "Hello, World"
+Write-Host "setting up 'get' operation"
 
 <#
 .Synopsis
@@ -9,19 +9,16 @@ Write-Host "Hello, World"
 
 .DESCRIPTION
 
-   This function adds two numbers together and returns the sum
+   This function clones a repository from GitHub in $home/code, in a directory named after the repository owner.
+   Then it changes to that directory.
+
+   If the repository already exists there, this function changes to that directory and runs 'git fetch'.
 
 .EXAMPLE
 
-   Add-TwoNumbers -a 2 -b 3
+    get -Repo org-visualizer -Owner atomist
 
-   Returns the number 5
-
-.EXAMPLE
-
-   Add-TwoNumbers 2 4
-
-   Returns the number 6
+    Clones github.com/atomist/org-visualizer to ~/code/atomist/org-visualizer, and changes to that directory.
 
 #>
 Function GetRepoFromGitHub {
@@ -42,15 +39,31 @@ Function GetRepoFromGitHub {
     $repopath = Join-Path -Path $ownerpath -ChildPath $Repo
 
     if (!$PSCmdlet.ShouldProcess($repopath)) {
-        return
+        return;
+    }
+
+    if (Get-Item -Path $repopath -ErrorAction SilentlyContinue) {
+        Write-Host "You already have $Owner/$Repo.`n"
+        Set-Location -Path $repopath
+        git fetch
+        git status
+        return;
     }
 
     if (!(Get-Item -Path $ownerpath -ErrorAction SilentlyContinue)) {
-        New-Item -Path $codepath -Name $owner -ItemType "directory"
+        New-Item -Path $codepath -Name $Owner -ItemType "directory" | Out-Null
+    }
+    else {
+        Write-Host "Directory for $Owner exists";
+    }
+    Set-Location -Path $ownerpath
+
+    if (git clone https://github.com/$Owner/$Repo) {
+        Set-Location -Path $repopath
+    }
+    else {
+        # TODO: delete newly created owner directory if the clone fails
     }
 
-    Set-Location -Path $ownerpath
-    Get-Location | Out-Null  
-    "okay"
 }
 Set-Alias get GetRepoFromGitHub
