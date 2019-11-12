@@ -25,10 +25,15 @@ $MyScriptsLocation = "$home\dotfiles\windows"
 . $MyScriptsLocation\get.ps1
 
 Function GitPush {
-    if (!(git push)) {
+    $PushOutput = "";
+    git push 2>&1 | Tee-Object -Variable PushOutput
+    if ($LastExitCode -ne 0) {
         $pwd = (Get-Location).toString()
         $wshell = New-Object -ComObject Wscript.Shell
-        $wshell.Popup("Your push failed in $pwd", 0, "Ratfish", 0x1)
+        $selection = $wshell.Popup("Your push failed in ${pwd}:`n$PushOutput", 0, "Ratfish", 0x1)
+    }
+    else {
+        Write-Host "Good job."
     }
 }
 Set-Alias push GitPush
