@@ -15,11 +15,14 @@ function Set-Context {
     process {
         $codepath = Join-Path $home "code"
 
+        # This returns a PathInfo if it returns anything
         $repopath = Get-ChildItem -Path $codepath | Get-ChildItem -Filter $Project
 
         if ($repopath) {
             Write-Host "Found something"
-            Set-Location $repopath.FullName
+            Set-Location -Path $repopath.FullName # You have to pass a string
+            # I could also do $repopath | Set-Location but that changes my prompt to something weird
+            $host.ui.RawUI.WindowTitle = $Project
             return
         }
         
