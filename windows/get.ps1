@@ -42,7 +42,7 @@ Function GetRepoFromGitHub {
         return;
     }
 
-    if (Get-Item -Path $repopath -ErrorAction SilentlyContinue) {
+    if (Test-Path $repopath) {
         Write-Host "You already have $Owner/$Repo.`n"
         Set-Location -Path $repopath
         git fetch
@@ -50,7 +50,7 @@ Function GetRepoFromGitHub {
         return;
     }
 
-    if (!(Get-Item -Path $ownerpath -ErrorAction SilentlyContinue)) {
+    if (!(Test-Path $ownerpath -ErrorAction)) {
         New-Item -Path $codepath -Name $Owner -ItemType "directory" | Out-Null
     }
     else {
