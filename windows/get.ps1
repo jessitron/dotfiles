@@ -1,6 +1,6 @@
 # Does this work?
 
-Write-Host "setting up 'get' operation"
+Write-Host "get: clone a repository"
 
 <#
 .Synopsis

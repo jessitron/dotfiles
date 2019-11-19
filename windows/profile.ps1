@@ -1,4 +1,18 @@
-echo "Good morning!"
+Write-Output "Good morning!"
+
+function Prompt {
+    # Am I in a git repo?
+    $gitpath = git rev-parse --show-toplevel
+    if ($LastExitCode -ne 0) {
+        # Not a git repo. use the current directory as the prompt
+        return (get-location).path + " > ";
+    }
+    # In a git repo.
+    $project = (get-item -path $gitpath).name
+    $branch = git rev-parse --abbrev-ref HEAD
+    $subdir = (get-location).path.replace(($gitpath | convert-path), "")
+    "$project@$branch$subdir > "
+}
 
 # ...
 Function GitStatus { git status }
@@ -24,10 +38,11 @@ $MyScriptsLocation = "$home\dotfiles\windows"
 
 . $MyScriptsLocation\get.ps1
 . $MyScriptsLocation\be.ps1
+. $MyScriptsLocation\fix-stderr.ps1
 
 Function GitPush {
     $PushOutput = "";
-    git push 2>&1 | Tee-Object -Variable PushOutput
+    git push 2>&1 | fix-stderr | Tee-Object -Variable PushOutput
     if ($LastExitCode -ne 0) {
         $pwd = (Get-Location).toString()
         $wshell = New-Object -ComObject Wscript.Shell

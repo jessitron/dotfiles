@@ -1,4 +1,4 @@
-Write-Host "Setting up the 'be' operation"
+Write-Host "be: move to a project directory"
 
 function Set-Context {
     [CmdletBinding()]
