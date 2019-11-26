@@ -1,6 +1,6 @@
 # Does this work?
 
-Write-Host "get: clone a repository"
+# Write-Host "get: clone a repository"
 
 <#
 .Synopsis
@@ -50,7 +50,7 @@ Function GetRepoFromGitHub {
         return;
     }
 
-    if (!(Test-Path $ownerpath -ErrorAction)) {
+    if (!(Test-Path $ownerpath -ErrorAction Ignore)) {
         New-Item -Path $codepath -Name $Owner -ItemType "directory" | Out-Null
     }
     else {
