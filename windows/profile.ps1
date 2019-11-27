@@ -1,5 +1,13 @@
 Write-Output "Good morning!"
 
+<#
+# Open the directory where I edit this configuration
+#>
+function Open-Dotfiles {
+    code $HOME/dotfiles
+}
+Set-Alias bp Open-Dotfiles
+
 function Prompt {
     # Am I in a git repo?
     $gitpath = git rev-parse --show-toplevel
