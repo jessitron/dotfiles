@@ -21,7 +21,7 @@
     Clones github.com/atomist/org-visualizer to ~/code/atomist/org-visualizer, and changes to that directory.
 
 #>
-Function GetRepoFromGitHub {
+Function Clone-GithubRepo {
     [CmdletBinding(SupportsShouldProcess)]
     param(
         [Parameter(Mandatory)]
@@ -37,7 +37,6 @@ Function GetRepoFromGitHub {
     $ownerpath = Join-Path -Path $codepath -ChildPath $Owner
 
     $repopath = Join-Path -Path $ownerpath -ChildPath $Repo
-
     if (!$PSCmdlet.ShouldProcess($repopath)) {
         return;
     }
@@ -47,7 +46,6 @@ Function GetRepoFromGitHub {
         Set-Location -Path $repopath
         git fetch
         git status
-        return;
     }
     else {
 
@@ -72,4 +70,4 @@ Function GetRepoFromGitHub {
     $host.ui.RawUI.WindowTitle = $Repo
 
 }
-Set-Alias get GetRepoFromGitHub
+Set-Alias -Name get -Value Clone-GithubRepo
