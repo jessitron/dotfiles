@@ -67,6 +67,14 @@ Function GitPush {
 }
 Set-Alias push GitPush
 
+<#
+Load this file again
+#>
+Function Load-Profile {
+    . $profile
+}
+Set-Alias -Name reload -Value Load-Profile
+
 <# 
 Upgrade atomist libs
 #>
