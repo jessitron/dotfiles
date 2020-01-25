@@ -49,22 +49,24 @@ Function GetRepoFromGitHub {
         git status
         return;
     }
-
-    if (!(Test-Path $ownerpath -ErrorAction Ignore)) {
-        New-Item -Path $codepath -Name $Owner -ItemType "directory" | Out-Null
-    }
     else {
-        Write-Host "Directory for $Owner exists";
-    }
-    Set-Location -Path $ownerpath
 
-    git clone https://github.com/$Owner/$Repo
-    if ($LastExitCode -eq 0) {
-        Write-Host "Moving to $repopath"
-        Set-Location -Path $repopath
-    }   
-    else {
-        # TODO: delete newly created owner directory if the clone fails
+        if (!(Test-Path $ownerpath -ErrorAction Ignore)) {
+            New-Item -Path $codepath -Name $Owner -ItemType "directory" | Out-Null
+        }
+        else {
+            Write-Host "Directory for $Owner exists";
+        }
+        Set-Location -Path $ownerpath
+
+        git clone https://github.com/$Owner/$Repo
+        if ($LastExitCode -eq 0) {
+            Write-Host "Moving to $repopath"
+            Set-Location -Path $repopath
+        }   
+        else {
+            # TODO: delete newly created owner directory if the clone fails
+        }
     }
 
     $host.ui.RawUI.WindowTitle = $Repo
