@@ -67,5 +67,7 @@ Function GetRepoFromGitHub {
         # TODO: delete newly created owner directory if the clone fails
     }
 
+    $host.ui.RawUI.WindowTitle = $Repo
+
 }
 Set-Alias get GetRepoFromGitHub
