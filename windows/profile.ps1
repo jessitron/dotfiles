@@ -1,5 +1,9 @@
 Write-Output "Good morning!"
 
+# Do Things Right
+Set-Alias -Name which -Value get-command # there is a 'which' in git bash which is full of shit
+$PSDefaultParameterValues['Out-File:Encoding'] = "utf8"
+
 <#
 # Open the directory where I edit this configuration
 #>
@@ -62,16 +66,17 @@ Function GitPush {
 }
 Set-Alias push GitPush
 
-<#
-.Synopsis
-  Set the title of the terminal tab.
+. $MyScriptsLocation\title.ps1
+
+<# 
+Upgrade atomist libs
 #>
-Function Set-Title {
-    param(
-        [Parameter(Mandatory)]
-        [string]
-        $NewTitle
-    )
-    $host.ui.RawUI.WindowTitle = $NewTitle
+Function Upgrade-AtomistLibs {
+    npm install @atomist/automation-client@branch-master @atomist/sdm@branch-master @atomist/sdm-core@branch-master @atomist/sdm-local@branch-master
 }
-Set-Alias -Name title -Value Set-Title
+Set-Alias alm Upgrade-AtomistLibs
+
+Function Open-RepositoryOrigin {
+    start (git remote get-url origin)
+}
+Set-Alias -Name gh -Value Open-RepositoryOrigin
