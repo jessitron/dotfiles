@@ -51,6 +51,7 @@ $MyScriptsLocation = "$home\dotfiles\windows"
 . $MyScriptsLocation\get.ps1
 . $MyScriptsLocation\be.ps1
 . $MyScriptsLocation\fix-stderr.ps1
+. $MyScriptsLocation\title.ps1
 
 Function GitPush {
     $PushOutput = "";
@@ -65,8 +66,6 @@ Function GitPush {
     }
 }
 Set-Alias push GitPush
-
-. $MyScriptsLocation\title.ps1
 
 <# 
 Upgrade atomist libs
