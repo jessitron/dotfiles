@@ -71,7 +71,7 @@ Set-Alias push GitPush
 Load this file again
 #>
 Function Load-Profile {
-    . $profile
+    echo 'Try: . $profile'
 }
 Set-Alias -Name reload -Value Load-Profile
 
