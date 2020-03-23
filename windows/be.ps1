@@ -25,7 +25,7 @@ function Set-Context {
         }
 
         if ($repopath) {
-            Write-Host $repopath.GetType()
+            # we expect a System.IO.DirectoryInfo
             Write-Host "Found something"
             Set-Location -Path $repopath.FullName # You have to pass a string
             # I could also do $repopath | Set-Location but that changes my prompt to something weird

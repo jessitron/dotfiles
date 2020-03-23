@@ -52,7 +52,6 @@ $MyScriptsLocation = "$home\dotfiles\windows"
 . $MyScriptsLocation\be.ps1
 . $MyScriptsLocation\fix-stderr.ps1
 . $MyScriptsLocation\title.ps1
-
 Function GitPush {
     $PushOutput = "";
     git push 2>&1 | fix-stderr | Tee-Object -Variable PushOutput
@@ -75,15 +74,10 @@ Function Load-Profile {
 }
 Set-Alias -Name reload -Value Load-Profile
 
-<# 
-Upgrade atomist libs
-#>
-Function Upgrade-AtomistLibs {
-    npm install @atomist/automation-client@branch-master @atomist/sdm@branch-master @atomist/sdm-core@branch-master @atomist/sdm-local@branch-master
-}
-Set-Alias alm Upgrade-AtomistLibs
-
 Function Open-RepositoryOrigin {
     start (git remote get-url origin)
 }
 Set-Alias -Name gh -Value Open-RepositoryOrigin
+
+. $MyScriptsLocation/renumber-tapas-shots.ps1
+Set-Alias -Name number -Value Update-ShotNumbers
