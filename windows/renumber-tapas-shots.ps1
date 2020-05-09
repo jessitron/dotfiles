@@ -27,3 +27,5 @@ function Update-ShotNumbers {
         (Get-Content $Path) | NumberShots | Set-Content $Path
     }
 }
+
+Write-Host "Defined function Update-ShotNumbers"
