@@ -52,6 +52,7 @@ $MyScriptsLocation = "$home\dotfiles\windows"
 . $MyScriptsLocation\be.ps1
 . $MyScriptsLocation\fix-stderr.ps1
 . $MyScriptsLocation\title.ps1
+. $MyScriptsLocation\bash-equivalents.ps1
 Function GitPush {
     $PushOutput = "";
     git push 2>&1 | fix-stderr | Tee-Object -Variable PushOutput
