@@ -14,7 +14,7 @@
     "files.eol": "\n",
     "git.enableSmartCommit": true,
     "workbench.startupEditor": "newUntitledFile",
-    "window.zoomLevel": -1,
+    "window.zoomLevel": 1,
     "mocha.requires": [
         "espower-typescript/guess"
     ],
