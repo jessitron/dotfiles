@@ -128,5 +128,8 @@
     "remote.containers.defaultExtensions": [
         "samueltscott.maximizeterminal"
     ],
-    "codespaces.accountProvider": "Microsoft"
+    "codespaces.accountProvider": "Microsoft",
+    "editor.dragAndDrop": false,
+    "java.home": "C:\\Program Files\\OpenJDK\\openjdk-11.0.7_10",
+    "java.refactor.renameFromFileExplorer": "autoApply"
 }
