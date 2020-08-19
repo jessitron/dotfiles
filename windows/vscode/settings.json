@@ -8,13 +8,13 @@
     },
     "json.schemas": [],
     "window.openFoldersInNewWindow": "on",
-    "editor.minimap.enabled": false,
+    "editor.minimap.enabled": true,
     "window.title": "${dirty}${rootName}",
     "window.newWindowDimensions": "maximized",
     "files.eol": "\n",
     "git.enableSmartCommit": true,
     "workbench.startupEditor": "newUntitledFile",
-    "window.zoomLevel": 1,
+    "window.zoomLevel": 2,
     "mocha.requires": [
         "espower-typescript/guess"
     ],
