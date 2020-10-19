@@ -14,7 +14,7 @@
     "files.eol": "\n",
     "git.enableSmartCommit": true,
     "workbench.startupEditor": "newUntitledFile",
-    "window.zoomLevel": 2,
+    "window.zoomLevel": 0,
     "mocha.requires": [
         "espower-typescript/guess"
     ],
@@ -131,5 +131,6 @@
     "codespaces.accountProvider": "Microsoft",
     "editor.dragAndDrop": false,
     "java.home": "C:\\Program Files\\OpenJDK\\openjdk-11.0.7_10",
-    "java.refactor.renameFromFileExplorer": "autoApply"
+    "java.refactor.renameFromFileExplorer": "autoApply",
+    "dotfiles.repository": "jessitron/vscode-dotfiles"
 }
