@@ -1,0 +1,27 @@
+#!/bin/bash
+
+set -e   
+
+repo=$1
+org=$2
+
+codedir=$HOME/code
+
+# todo: get org from current directory if empty
+if [ -z "$org" ]
+then
+   echo "Usage: get <repo> <org>"
+   exit 1
+fi
+
+cd $codedir
+
+if [ ! -d $org ]
+then
+   mkdir $org
+fi
+cd $org
+
+git clone git@github.com:$org/$repo
+
+cd $repo
