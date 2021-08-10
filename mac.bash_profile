@@ -11,24 +11,11 @@ export GOPATH="$HOME/code/other/go"
 export PATH="$PATH:$HOME/bin:$GOPATH/bin"
 export PIP_REQUIRE_VIRTUALENV=true
 
-export ATOMIST_ROOT=$HOME/code
-
-# atomist teams
-export satellite_of_love=T1JVCMVH7
-export spring_team=T5964N9B7
-export atm_empire_of_software=A4GEO7GK4
-export atm_slimslender=ANBD24ZEC
-export atomist_community=T29E48P34
-
 fetch_github_scopes='curl -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/user -s -v 2>&1 | grep X-OAuth-Scopes: | cut -c 3-'
 fetch_github_user='curl -H "Authorization: Bearer $GITHUB_TOKEN" https://api.github.com/user -s | jq .login'
 alias gh-whoami="$fetch_github_user && $fetch_github_scopes"
 
-source /Users/jessitron/tools/google-cloud-sdk/path.bash.inc
-source /Users/jessitron/tools/google-cloud-sdk/completion.bash.inc
-
 alias x='chmod u+x $(ls -tr | tail -1)'
-alias m='git checkout master'
 
 alias ll='ls -la'
 alias gs='git status'
@@ -45,16 +32,7 @@ alias glr='git ll $(git for-each-ref --sort=-committerdate --count=3 --format="%
 alias grh='git reset --hard $(git rev-parse --abbrev-ref --symbolic-full-name @{u})'
 alias cm='git checkout master'
 
-alias botlogs='cd ~/kubes/staging &&  k logs $(kp | grep bot | cut -c1-30) | less'
-
-alias glcoud=gcloud
-
-alias cf-login='echo "Password is under pivotal in 1Password" && cf login -a api.run.pivotal.io -u jessitron@atomist.com -o atomist -s jessitron'
-
 alias sign='git commit --allow-empty -m "sign"'
-
-# set up SDM idea config. open idea, close it, run this.
-alias ia='export foo=$(pwd) && cd ~/code/satellite-of-love/can-i-make-intellij-set-up/ && ts-node bin/set-up.ts $foo && cd - && idea .'
 
 #I hate macs sometimes
 alias pr="$HOME/bin/pr"
@@ -160,19 +138,6 @@ function be {
     return
   fi
   # overrides
-  if [ "$where" == "sample" ] ; then
-    where="sample-sdm"
-  fi
-  if [ "$where" == "client" ] ; then
-    where="automation-client-ts"
-  fi
-  if [ "$where" == "lifecycle" ] ; then
-  	where="lifecycle-automation"
-  fi
-  if echo $where | grep -e '-pack$' ; then
-  	which_pack=$(echo $where | sed 's/-pack//')
-  	where="sdm-pack-$which_pack"
-  fi
 
   # check my favorite directories
   for dir in $(cat ~/.be_dirs); do
@@ -328,32 +293,3 @@ function one_time_config() {
 function latest() {
 	npm view $1 --json | jq '."dist-tags".latest'
 }
-###-begin-index.ts-completions-###
-#
-# yargs command completion script
-#
-# Installation: index.ts completion >> ~/.bashrc
-#    or index.ts completion >> ~/.bash_profile on OSX.
-#
-_yargs_completions()
-{
-    local cur_word args type_list
-
-    cur_word="${COMP_WORDS[COMP_CWORD]}"
-    args=("${COMP_WORDS[@]}")
-
-    # ask yargs to generate completions.
-    type_list=$(yargy --get-yargs-completions "${args[@]}")
-
-    COMPREPLY=( $(compgen -W "${type_list}" -- ${cur_word}) )
-
-    # if no match was found, fall back to filename completion
-    if [ ${#COMPREPLY[@]} -eq 0 ]; then
-      COMPREPLY=( $(compgen -f -- "${cur_word}" ) )
-    fi
-
-    return 0
-}
-complete -F _yargs_completions yargy
-###-end-index.ts-completions-###
-
