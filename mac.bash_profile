@@ -8,7 +8,7 @@ echo "Good morning!"
 [ -f $HOME/.bash_profile_secrets ] && . $HOME/.bash_profile_secrets
 
 export GOPATH="$HOME/code/other/go"
-export PATH="$PATH:$HOME/bin:$GOPATH/bin"
+export PATH="$PATH:$HOME/bin:/usr/local/bin:$GOPATH/bin"
 export PIP_REQUIRE_VIRTUALENV=true
 
 fetch_github_scopes='curl -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/user -s -v 2>&1 | grep X-OAuth-Scopes: | cut -c 3-'
@@ -19,7 +19,7 @@ alias x='chmod u+x $(ls -tr | tail -1)'
 
 alias ll='ls -la'
 alias gs='git status'
-alias bp='subl ~/.bash_profile'
+alias bp='code ~/.bash_profile'
 alias reload='source ~/.bash_profile'
 
 alias gtouch='git commit --allow-empty -m touch'
@@ -99,22 +99,28 @@ function get() {
      cd $org 
    fi
    echo "cloning $org/$repo"
-   if git clone git@github.com:$org/$repo
+   if git clone https://github.com/$org/$repo
    then
 
    cd $repo
    title $repo
 
-   if [[ "$org" == "atomist" ]]
+   if [[ "$org" == "honeycombio" ]]
    then
      cp ~/bin/resources/pre-push .git/hooks   # prevent accidental 
-     git config --local user.email "jessitron@atomist.com"
+     git config --local user.email "jessitron@honeycomb.io"
    fi
 
-   if [[ -e "package.json" ]]
+   if [[ "$org" == "jessitron" ]]
    then
-   	  npm ci
+     cp ~/bin/resources/pre-push .git/hooks   # prevent accidental 
+     git config --local user.email "jessitron@gmail.com"
    fi
+
+  #  if [[ -e "package.json" ]]
+  #  then
+  #  	  npm ci
+  #  fi
    else
 	echo "That didn't work"
    fi
