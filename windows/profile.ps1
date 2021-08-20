@@ -82,3 +82,8 @@ Set-Alias -Name gh -Value Open-RepositoryOrigin
 
 . $MyScriptsLocation/renumber-tapas-shots.ps1
 Set-Alias -Name number -Value Update-ShotNumbers
+
+Function List-GreedyProcesses {
+    (Get-Counter '\Process(*)\% Processor Time').CounterSamples | Where-Object { $_.CookedValue -gt 1 } | sort-object -Property CookedValue
+}
+Set-Alias -Name top -Value List-GreedyProcesses
