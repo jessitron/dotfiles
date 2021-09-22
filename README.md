@@ -20,3 +20,9 @@ in $HOME: `git clone git@github.com:jessitron/dotfiles`
 I think this is 
 
 `ln -s ~/dotfiles/windows-wsl-ubuntu.bashrc ~/.bash_profile`
+
+## git
+
+configure git
+
+`source ~/dotfiles/one-time-git-setup.sh`
