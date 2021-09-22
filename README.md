@@ -1,12 +1,22 @@
 # dotfiles
 gotta save them somewhere.
 
-# vscode
+# Usual setup: linux
 
-## administrator privileges required!1! !!!#!
+## Set up an ssh key for github
 
-cd ~/AppData/Roaming/Code/User
-mv settings.json before-settings.json
-mv keybindings.json before-keyboards.json
-new-item -ItemType SymbolicLink -Target $HOME/dotfiles/windows/vscode/settings.json -Path settings.json
-new-item -ItemType SymbolicLink -Target $HOME/dotfiles/windows/vscode/keybindings.json -Path keybindings.json
+`ssh-keygen`
+
+`cat ~/.ssh/id-rsa.pub`
+
+now log in to GitHub->settings->SSH keys->paste the new one in
+
+## get these dotfiles
+
+in $HOME: `git clone git@github.com:jessitron/dotfiles` 
+
+## link in the profile
+
+I think this is 
+
+`ln -s ~/dotfiles/windows-wsl-ubuntu.bashrc ~/.bash_profile`
