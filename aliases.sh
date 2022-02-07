@@ -14,19 +14,13 @@ alias x='chmod u+x $(ls -tr | tail -1)'
 alias how-many-hours='git log --format="%cD" | cut -d : -f 1 | sort -u | wc -l'
 
 function cod {
-  if [[ -d ".devcontainer" ]]
+  if [[ $1 == "e." ]]
   then
-    echo "I see that there is a devcontainer here"
-    devcontainer open
-  else 
-    if [[ $1 == "e." ]]
-    then
-      # I'm quite sure what I meant
-      code .
-    else
-      echo "I'm guessing you meant 'code .'"
-      code .
-    fi
+     # I'm quite sure what I meant
+     code .
+  else
+     echo "I'm guessing you meant 'code .'"
+     code .
   fi
 }
 
