@@ -1,6 +1,16 @@
 # dotfiles
 gotta save them somewhere.
 
+# Mac
+
+```
+mkdir -p ~/code/jessitron
+cd ~/code/jessitron
+git clone https://github.com/jessitron/dotfiles
+```
+
+`ln -s ~/code/jessitron/dotfiles/mac.zshrc ~/.zshrc`
+
 # Usual setup: linux
 
 ## Set up an ssh key for github
