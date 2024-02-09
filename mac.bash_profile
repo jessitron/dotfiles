@@ -10,7 +10,6 @@ alias p="git push"
 [ -f $HOME/.bash_profile_secrets ] && . $HOME/.bash_profile_secrets
 
 export PATH="$PATH:$HOME/bin:/usr/local/bin"
-export PIP_REQUIRE_VIRTUALENV=true
 
 # kubectl package manager
 export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
@@ -39,8 +38,6 @@ alias gs='git status'
 alias bp='vi ~/.bash_profile'
 alias reload='source ~/.bash_profile'
 
-alias gtouch='git commit --allow-empty -m touch'
-
 alias cod="code ."
 
 alias grecent='git ll $(git for-each-ref --sort=-committerdate --count=3 --format="%(refname:short)" refs/remotes/origin)'
@@ -49,12 +46,8 @@ alias glr='git ll $(git for-each-ref --sort=-committerdate --count=3 --format="%
 
 # reset to upstream
 alias grh='git reset --hard $(git rev-parse --abbrev-ref --symbolic-full-name @{u})'
-alias cm='git checkout master'
 
 alias sign='git commit --allow-empty -m "sign"'
-
-#I hate macs sometimes
-alias pr="$HOME/bin/pr"
 
 function timecurl() {
   url=$1
@@ -79,8 +72,7 @@ function alert() {
 
 function gp() {
     repo=$(git remote get-url origin | sed 's/.*\///')
-
-	if git push
+    if git push
 	then
       echo "yay"
     else
@@ -89,7 +81,7 @@ function gp() {
 }
 
 function gpf() {
-	if git push -f
+    if git push -f
 	then
       echo "yay"
     else

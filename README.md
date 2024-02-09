@@ -7,10 +7,10 @@ gotta save them somewhere.
 mkdir -p ~/code/jessitron
 cd ~/code/jessitron
 git clone https://github.com/jessitron/dotfiles
+
+ln -s ~/code/jessitron/dotfiles/mac.zshrc ~/.zshrc
+source one-time-git-setup.sh
 ```
-
-`ln -s ~/code/jessitron/dotfiles/mac.zshrc ~/.zshrc`
-
 # Usual setup: linux
 
 ## Set up an ssh key for github
