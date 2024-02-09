@@ -2,27 +2,46 @@ echo "Good morning!"
 
 # f you mac
 # alias git="/usr/local/bin/git"
+alias k=kubectl
+alias p="git push"
 
 [ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion
 
 [ -f $HOME/.bash_profile_secrets ] && . $HOME/.bash_profile_secrets
 
-export GOPATH="$HOME/code/other/go"
-export PATH="$PATH:$HOME/bin:/usr/local/bin:$GOPATH/bin"
+export PATH="$PATH:$HOME/bin:/usr/local/bin"
 export PIP_REQUIRE_VIRTUALENV=true
 
-fetch_github_scopes='curl -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/user -s -v 2>&1 | grep X-OAuth-Scopes: | cut -c 3-'
-fetch_github_user='curl -H "Authorization: Bearer $GITHUB_TOKEN" https://api.github.com/user -s | jq .login'
+# kubectl package manager
+export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+
+### Do this sometimes
+alias dockerlogin='aws ecr get-login-password --region $(aws configure get region) | docker login --username AWS --password-stdin 414852377253.dkr.ecr.$(aws configure get region).amazonaws.com'
+
+
+# hound (Honeycomb)
+eval "$(direnv hook bash)"
+. $HOME/.asdf/asdf.sh
+
+export GOPRIVATE=github.com/honeycomb.io
+export PATH=$PATH:$GOPATH/bin
+
+# Some of the code uses a lot of connections
+ulimit -n 8192
+## end hound
+
 alias gh-whoami="$fetch_github_user && $fetch_github_scopes"
 
 alias x='chmod u+x $(ls -tr | tail -1)'
 
 alias ll='ls -la'
 alias gs='git status'
-alias bp='code ~/.bash_profile'
+alias bp='vi ~/.bash_profile'
 alias reload='source ~/.bash_profile'
 
 alias gtouch='git commit --allow-empty -m touch'
+
+alias cod="code ."
 
 alias grecent='git ll $(git for-each-ref --sort=-committerdate --count=3 --format="%(refname:short)" refs/remotes/origin)'
 # this one doesn't work right :-( I want to see most recently updated branches
@@ -42,6 +61,7 @@ function timecurl() {
   time curl -s -o /dev/null -w @/Users/jessitron/.curl-format.txt  $url
 }
 
+# this is a great alias
 function gitexclude() {
   pattern=$1
 
@@ -107,13 +127,8 @@ function get() {
 
    if [[ "$org" == "honeycombio" ]]
    then
-     cp ~/bin/resources/pre-push .git/hooks   # prevent accidental 
      git config --local user.email "jessitron@honeycomb.io"
-   fi
-
-   if [[ "$org" == "jessitron" ]]
-   then
-     cp ~/bin/resources/pre-push .git/hooks   # prevent accidental 
+   else
      git config --local user.email "jessitron@gmail.com"
    fi
 
@@ -144,6 +159,9 @@ function be {
     return
   fi
   # overrides
+  if [ $where == "otel-demo" ] ; then
+    where=opentelemetry-demo
+  fi
 
   # check my favorite directories
   for dir in $(cat ~/.be_dirs); do
@@ -284,7 +302,7 @@ export PS1="\`parse_git_branch\` \W \[\e[31m\]\`nonzero_return\`\[\e[m\]\[\e[33m
 # satellite-of-love
 test -e "${HOME}/.iterm2_shell_integration.bash" && source "${HOME}/.iterm2_shell_integration.bash"
 
-# atomist
+# demos
 alias c='git commit -am "commit it all right now" && git push'
 
 function one_time_config() {
@@ -298,4 +316,19 @@ function one_time_config() {
 
 function latest() {
 	npm view $1 --json | jq '."dist-tags".latest'
+}
+# honeycomb 
+export VOLTA_HOME="$HOME/.volta"
+export PATH="$VOLTA_HOME/bin:$PATH"
+
+export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
+
+# me
+function wtf() {
+  printf "####\n What cluster am I in?\n####\n"
+  kubectl config get-contexts
+  printf "##\nWho does k8s think I am? "
+  kubectl whoami
+  printf '####\nWho does AWS think I am?\n###\n'
+  aws sts get-caller-identity
 }
