@@ -1,6 +1,9 @@
 # we are here
 echo "Good morning."
 
+# path
+PATH="/usr/local/bin:/opt/homebrew/bin/:$PATH"
+
 # essentials
 alias gs='git status'
 alias ll='ls -a'
@@ -17,9 +20,11 @@ zstyle ':vcs_info:git:*' unstagedstr ' ⏿'
 setopt PROMPT_SUBST
 PROMPT='%F{#10aa20}%*%f %? %F{#EEEEE1}%1~%f %F{#FF2020}%f${vcs_info_msg_0_}$ '
 
-#  history
+#  history ... does this work?
 export HISTFILE=~/.zsh_history
-export SAVEHIST=1000
+export HISTSIZE=10000
+export SAVEHIST=10000
+setopt appendhistory
 
 
 function alert() {
