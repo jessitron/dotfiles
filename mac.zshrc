@@ -26,6 +26,8 @@ export HISTSIZE=10000
 export SAVEHIST=10000
 setopt appendhistory
 
+# fucking work
+export GPG_TTY=$(tty)
 
 function alert() {
 	local message=$1
