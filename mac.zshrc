@@ -6,9 +6,11 @@ PATH="/usr/local/bin:/opt/homebrew/bin/:$PATH"
 
 # essentials
 alias gs='git status'
-alias ll='ls -a'
+alias ll='ls -la'
 alias bp='vi ~/.zshrc'
 alias reload='source ~/.zshrc'
+alias k=kubectl
+alias x='chmod +x *(om[1])' # this is interesting here
 
 ## prompt
 autoload -Uz vcs_info
@@ -19,6 +21,7 @@ zstyle ':vcs_info:git:*' stagedstr ' 🌞'
 zstyle ':vcs_info:git:*' unstagedstr ' ⏿'
 setopt PROMPT_SUBST
 PROMPT='%F{#10aa20}%*%f %? %F{#EEEEE1}%1~%f %F{#FF2020}%f${vcs_info_msg_0_}$ '
+# PROMPT='> '
 
 #  history ... does this work?
 export HISTFILE=~/.zsh_history
@@ -26,8 +29,19 @@ export HISTSIZE=10000
 export SAVEHIST=10000
 setopt appendhistory
 
+# because
+alias cod='code .'
+
 # fucking work
 export GPG_TTY=$(tty)
+
+# Honeycomb
+eval "$(direnv hook zsh)"
+. "$HOME/.asdf/asdf.sh"
+# append completions to fpath
+fpath=(${ASDF_DIR}/completions $fpath)
+# initialise completions with ZSH's compinit
+autoload -Uz compinit && compinit
 
 function alert() {
 	local message=$1
@@ -92,7 +106,7 @@ function get() {
 
 
 # change directories, plus title the window
-function be {
+function be() {
   where=$1
   if [[ -z "$where" ]] ; then
   	echo "Usage: be <some-likely-directory>"
@@ -102,6 +116,12 @@ function be {
   # overrides
   if [[ $where == "otel-demo" ]] ; then
     where=opentelemetry-demo
+  elif [[ $where == "oquiz" ]] ; then
+    echo "I think you mean, observaquiz-ui"
+    where=observaquiz-ui
+  elif [[ $where == "oday" ]] ; then
+    echo "I think you mean, observability-day"
+    where=observability-day-workshop
   fi
 
   # check my favorite directories
