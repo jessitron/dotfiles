@@ -1,0 +1,5 @@
+Here are some things to remember. Always do these:
+- Make commits after every conceptual change (don't bundle multiple changes into a single commit)
+- Tag all commit messages with "- auggie" to attribute them to the AI assistant
+- Use shorter timeouts when waiting for processes to complete
+- Source the  .be file before running scripts to have the right keys in the environment

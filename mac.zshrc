@@ -43,6 +43,20 @@ fpath=(${ASDF_DIR}/completions $fpath)
 # initialise completions with ZSH's compinit
 autoload -Uz compinit && compinit
 
+### Honeycomb AWS, SA access
+export AWS_PROFILE=sandbox
+export AWS_REGION=us-east-1
+alias awslogin="aws sso login --sso-session sso-default"
+# SA sandbox, I think:
+# alias ecrlogin="aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin 465062709130.dkr.ecr.$AWS_REGION.amazonaws.com"
+
+# Jessitron sandbox:
+alias dockerlogin='aws ecr get-login-password --region $(aws configure get region) | docker login --username AWS --password-stdin 414852377253.dkr.ecr.$(aws configure get region).amazonaws.com'
+
+
+# rust
+. "$HOME/.cargo/env"
+
 function alert() {
 	local message=$1
 	local begin='tell application (path to frontmost application as text) to display dialog "'
@@ -114,14 +128,19 @@ function be() {
     return
   fi
   # overrides
-  if [[ $where == "otel-demo" ]] ; then
+  if [[ $where == "explore" ]] ; then
+    where=exploreddd.github.com
+  elif [[ $where == "otel-demo" ]] ; then
     where=opentelemetry-demo
-  elif [[ $where == "oquiz" ]] ; then
-    echo "I think you mean, observaquiz-ui"
-    where=observaquiz-ui
   elif [[ $where == "oday" ]] ; then
-    echo "I think you mean, observability-day"
-    where=observability-day-workshop
+    where=meminator-workshop
+    echo "I think you mean, $where"
+  elif [[ $where == "oquiz" ]] ; then
+    where=observaquiz-ui
+    echo "I think you mean, $where"
+  elif [[ $where == "devrel-demo" ]] ; then
+    where=devrel-opentelemetry-demo
+    echo "I think you mean, $where"
   fi
 
   # check my favorite directories
@@ -149,3 +168,10 @@ function be() {
   	source .be
   fi
 }
+
+function 😱() {
+  echo "Yeah, I feel that way too."
+}
+
+# Added by Windsurf
+export PATH="/Users/jessicakerr/.codeium/windsurf/bin:$PATH"
