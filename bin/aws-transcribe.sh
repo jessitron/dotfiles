@@ -130,20 +130,41 @@ else
     log_info "Audio file uploaded to: $S3_URI"
 fi
 
-# Start transcription job with subtitle generation
-log_info "Starting transcription job: $JOB_NAME"
+# Start transcription job with subtitle generation (or check if already exists)
+log_info "Checking for existing transcription job: $JOB_NAME"
 
-aws transcribe start-transcription-job \
-    --transcription-job-name "$JOB_NAME" \
-    --language-code "$LANGUAGE_CODE" \
-    --media-format "wav" \
-    --media "MediaFileUri=$S3_URI" \
-    --output-bucket-name "$BUCKET_NAME" \
-    --output-key "transcriptions/${JOB_NAME}/" \
-    --subtitles "Formats=srt" || {
-    log_error "Failed to start transcription job"
-    exit 1
-}
+# Check if job already exists
+if aws transcribe get-transcription-job --transcription-job-name "$JOB_NAME" &> /dev/null; then
+    log_info "Transcription job already exists, checking status..."
+    STATUS=$(aws transcribe get-transcription-job \
+        --transcription-job-name "$JOB_NAME" \
+        --query 'TranscriptionJob.TranscriptionJobStatus' \
+        --output text)
+    
+    if [ "$STATUS" = "COMPLETED" ]; then
+        log_info "Job already completed, skipping to download..."
+    elif [ "$STATUS" = "FAILED" ]; then
+        log_error "Previous job failed, please use a different job name or delete the failed job"
+        exit 1
+    else
+        log_info "Job in progress, waiting for completion..."
+    fi
+else
+    # Start new transcription job
+    log_info "Starting new transcription job: $JOB_NAME"
+    
+    aws transcribe start-transcription-job \
+        --transcription-job-name "$JOB_NAME" \
+        --language-code "$LANGUAGE_CODE" \
+        --media-format "wav" \
+        --media "MediaFileUri=$S3_URI" \
+        --output-bucket-name "$BUCKET_NAME" \
+        --output-key "transcriptions/${JOB_NAME}/" \
+        --subtitles "Formats=srt" || {
+        log_error "Failed to start transcription job"
+        exit 1
+    }
+fi
 
 # Wait for job completion
 log_info "Waiting for transcription to complete..."
@@ -193,15 +214,39 @@ log_info "Downloading files..."
 
 # Download and save plain text transcript
 TRANSCRIPT_FILE="${OUTPUT_DIR}/${FILE_BASE}_transcript.txt"
-curl -s "$TRANSCRIPT_URI" | jq -r '.results.transcripts[0].transcript' > "$TRANSCRIPT_FILE"
 
-log_info "Plain text transcript saved to: $TRANSCRIPT_FILE"
+# Download transcript with error handling
+log_info "Downloading transcript..."
+TEMP_JSON=$(mktemp)
+
+if curl -s "$TRANSCRIPT_URI" > "$TEMP_JSON"; then
+    # Verify JSON is valid and extract transcript
+    if jq empty "$TEMP_JSON" 2>/dev/null; then
+        jq -r '.results.transcripts[0].transcript' "$TEMP_JSON" > "$TRANSCRIPT_FILE"
+        log_info "Plain text transcript saved to: $TRANSCRIPT_FILE"
+    else
+        log_error "Downloaded file is not valid JSON"
+        log_info "Raw content (first 200 chars):"
+        head -c 200 "$TEMP_JSON"
+        echo ""
+        exit 1
+    fi
+else
+    log_error "Failed to download transcript from: $TRANSCRIPT_URI"
+    exit 1
+fi
+
+rm "$TEMP_JSON"
 
 # Download and save SRT file
 SRT_FILE="${OUTPUT_DIR}/${FILE_BASE}.srt"
-curl -s "$SRT_URI" > "$SRT_FILE"
 
-log_info "SRT subtitles saved to: $SRT_FILE"
+if curl -s "$SRT_URI" > "$SRT_FILE"; then
+    log_info "SRT subtitles saved to: $SRT_FILE"
+else
+    log_error "Failed to download SRT file from: $SRT_URI"
+    exit 1
+fi
 
 # Summary
 log_info "Transcription complete! Files saved:"
