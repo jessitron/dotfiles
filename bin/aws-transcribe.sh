@@ -89,7 +89,6 @@ check_dependencies
 FILENAME=$(basename "$VIDEO_FILE")
 FILE_EXTENSION="${FILENAME##*.}"
 FILE_BASE="${FILENAME%.*}"
-TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 
 # Extract audio from video
 AUDIO_FILE="${OUTPUT_DIR}/${FILE_BASE}.wav"
@@ -107,7 +106,8 @@ else
 fi
 
 # Sanitize job name - replace spaces and special chars with underscores
-JOB_NAME="transcribe-$(echo "${FILE_BASE}" | sed 's/[^a-zA-Z0-9._-]/_/g')-${TIMESTAMP}"
+# No timestamp so we can reuse the same job name for the same file
+JOB_NAME="transcribe-$(echo "${FILE_BASE}" | sed 's/[^a-zA-Z0-9._-]/_/g')"
 
 # Create output directory
 mkdir -p "$OUTPUT_DIR"
