@@ -8,7 +8,8 @@ set -e
 # Configuration
 BUCKET_NAME="none-of-the-above"
 LANGUAGE_CODE="en-US"
-OUTPUT_DIR="./transcriptions"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+OUTPUT_DIR="${SCRIPT_DIR}/transcriptions"
 
 # Colors for output
 RED='\033[0;31m'
