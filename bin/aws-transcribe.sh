@@ -218,16 +218,16 @@ log_info "Downloading files..."
 # Download and save plain text transcript
 TRANSCRIPT_FILE="${OUTPUT_DIR}/${FILE_BASE}_transcript.txt"
 
-# Download transcript with error handling
+# Download transcript with AWS CLI (handles authentication)
 log_info "Downloading transcript..."
 TEMP_JSON=$(mktemp)
 
-if curl -s "$TRANSCRIPT_URI" > "$TEMP_JSON"; then
+# Extract bucket and key from transcript URI
+TRANSCRIPT_S3_PATH=$(echo "$TRANSCRIPT_URI" | sed 's|https://[^/]*/||')
+
+if aws s3 cp "s3://${TRANSCRIPT_S3_PATH}" "$TEMP_JSON"; then
     # Show what we actually downloaded
     log_info "Downloaded file size: $(wc -c < "$TEMP_JSON") bytes"
-    log_info "First 500 characters of downloaded content:"
-    head -c 500 "$TEMP_JSON"
-    echo ""
     
     # Verify JSON is valid and extract transcript
     if jq empty "$TEMP_JSON" 2>/dev/null; then
@@ -235,13 +235,13 @@ if curl -s "$TRANSCRIPT_URI" > "$TEMP_JSON"; then
         log_info "Plain text transcript saved to: $TRANSCRIPT_FILE"
     else
         log_error "Downloaded file is not valid JSON"
-        log_info "Full content:"
-        cat "$TEMP_JSON"
+        log_info "First 500 characters:"
+        head -c 500 "$TEMP_JSON"
         echo ""
         exit 1
     fi
 else
-    log_error "Failed to download transcript from: $TRANSCRIPT_URI"
+    log_error "Failed to download transcript from S3"
     exit 1
 fi
 
@@ -250,10 +250,13 @@ rm "$TEMP_JSON"
 # Download and save SRT file
 SRT_FILE="${OUTPUT_DIR}/${FILE_BASE}.srt"
 
-if curl -s "$SRT_URI" > "$SRT_FILE"; then
+# Extract bucket and key from SRT URI
+SRT_S3_PATH=$(echo "$SRT_URI" | sed 's|https://[^/]*/||')
+
+if aws s3 cp "s3://${SRT_S3_PATH}" "$SRT_FILE"; then
     log_info "SRT subtitles saved to: $SRT_FILE"
 else
-    log_error "Failed to download SRT file from: $SRT_URI"
+    log_error "Failed to download SRT file from S3"
     exit 1
 fi
 
