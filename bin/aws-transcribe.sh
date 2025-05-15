@@ -134,7 +134,7 @@ fi
 log_info "Checking for existing transcription job: $JOB_NAME"
 
 # Check if job already exists
-if aws transcribe get-transcription-job --transcription-job-name "$JOB_NAME" &> /dev/null; then
+if aws transcribe get-transcription-job --transcription-job-name "$JOB_NAME" --output json &> /dev/null; then
     log_info "Transcription job already exists, checking status..."
     STATUS=$(aws transcribe get-transcription-job \
         --transcription-job-name "$JOB_NAME" \
@@ -202,7 +202,7 @@ while true; do
 done
 
 # Get job details
-JOB_DETAILS=$(aws transcribe get-transcription-job --transcription-job-name "$JOB_NAME")
+JOB_DETAILS=$(aws transcribe get-transcription-job --transcription-job-name "$JOB_NAME" --output json)
 
 # Get transcript URI
 TRANSCRIPT_URI=$(echo "$JOB_DETAILS" | jq -r '.TranscriptionJob.Transcript.TranscriptFileUri')
