@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Amazon Transcribe Automation Script, by claude 3.7 sonnet
+# Amazon Transcribe Automation Script
 # Usage: ./transcribe.sh <video_file>
 
 set -e
@@ -8,7 +8,8 @@ set -e
 # Configuration
 BUCKET_NAME="none-of-the-above"
 LANGUAGE_CODE="en-US"
-OUTPUT_DIR="./transcriptions"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+OUTPUT_DIR="${SCRIPT_DIR}/transcriptions"
 
 # Colors for output
 RED='\033[0;31m'
@@ -42,8 +43,8 @@ check_dependencies() {
         exit 1
     fi
     
-    # Check AWS credentials, also output them because I like to see them
-    if ! aws sts get-caller-identity ; then
+    # Check AWS credentials
+    if ! aws sts get-caller-identity &> /dev/null; then
         log_error "AWS credentials not configured. Please run 'aws configure'."
         exit 1
     fi
@@ -83,21 +84,30 @@ FILENAME=$(basename "$VIDEO_FILE")
 FILE_EXTENSION="${FILENAME##*.}"
 FILE_BASE="${FILENAME%.*}"
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
-JOB_NAME="transcribe-${FILE_BASE}-${TIMESTAMP}"
+
+# Sanitize job name - replace spaces and special chars with underscores
+JOB_NAME="transcribe-$(echo "${FILE_BASE}" | sed 's/[^a-zA-Z0-9._-]/_/g')-${TIMESTAMP}"
 
 # Create output directory
 mkdir -p "$OUTPUT_DIR"
 
-# Upload file to S3
-log_info "Uploading $FILENAME to S3..."
+# Check if file already exists on S3
+log_info "Checking if file already exists on S3..."
 S3_URI="s3://${BUCKET_NAME}/${FILENAME}"
 
-aws s3 cp "$VIDEO_FILE" "$S3_URI" || {
-    log_error "Failed to upload file to S3"
-    exit 1
-}
-
-log_info "File uploaded to: $S3_URI"
+if aws s3 ls "$S3_URI" &> /dev/null; then
+    log_info "File already exists on S3: $S3_URI"
+else
+    # Upload file to S3
+    log_info "Uploading $FILENAME to S3..."
+    
+    aws s3 cp "$VIDEO_FILE" "$S3_URI" || {
+        log_error "Failed to upload file to S3"
+        exit 1
+    }
+    
+    log_info "File uploaded to: $S3_URI"
+fi
 
 # Start transcription job with subtitle generation
 log_info "Starting transcription job: $JOB_NAME"
@@ -180,4 +190,4 @@ echo "  - S3 SRT subtitles: $SRT_URI"
 echo "  - Local plain text: $TRANSCRIPT_FILE"
 echo "  - Local SRT subtitles: $SRT_FILE"
 
-log_info "Note: Video and transcription files remain on S3 in bucket '$BUCKET_NAME'"v
+log_info "Note: Video and transcription files remain on S3 in bucket '$BUCKET_NAME'"
