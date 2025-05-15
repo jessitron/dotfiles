@@ -43,6 +43,13 @@ check_dependencies() {
         exit 1
     fi
     
+    if ! command -v ffmpeg &> /dev/null; then
+        log_error "ffmpeg not found. Please install ffmpeg for audio extraction."
+        echo "  macOS: brew install ffmpeg"
+        echo "  Ubuntu/Debian: sudo apt install ffmpeg"
+        exit 1
+    fi
+    
     # Check AWS credentials
     if ! aws sts get-caller-identity &> /dev/null; then
         log_error "AWS credentials not configured. Please run 'aws configure'."
@@ -85,28 +92,43 @@ FILE_EXTENSION="${FILENAME##*.}"
 FILE_BASE="${FILENAME%.*}"
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 
+# Extract audio from video
+AUDIO_FILE="${OUTPUT_DIR}/${FILE_BASE}.wav"
+AUDIO_FILENAME="${FILE_BASE}.wav"
+
+log_info "Extracting audio from video..."
+if [ ! -f "$AUDIO_FILE" ]; then
+    ffmpeg -i "$VIDEO_FILE" -vn -acodec pcm_s16le -ar 44100 -ac 2 "$AUDIO_FILE" -y || {
+        log_error "Failed to extract audio from video"
+        exit 1
+    }
+    log_info "Audio extracted to: $AUDIO_FILE"
+else
+    log_info "Audio file already exists: $AUDIO_FILE"
+fi
+
 # Sanitize job name - replace spaces and special chars with underscores
 JOB_NAME="transcribe-$(echo "${FILE_BASE}" | sed 's/[^a-zA-Z0-9._-]/_/g')-${TIMESTAMP}"
 
 # Create output directory
 mkdir -p "$OUTPUT_DIR"
 
-# Check if file already exists on S3
-log_info "Checking if file already exists on S3..."
-S3_URI="s3://${BUCKET_NAME}/${FILENAME}"
+# Check if audio file already exists on S3
+log_info "Checking if audio file already exists on S3..."
+S3_URI="s3://${BUCKET_NAME}/${AUDIO_FILENAME}"
 
 if aws s3 ls "$S3_URI" &> /dev/null; then
-    log_info "File already exists on S3: $S3_URI"
+    log_info "Audio file already exists on S3: $S3_URI"
 else
-    # Upload file to S3
-    log_info "Uploading $FILENAME to S3..."
+    # Upload audio file to S3
+    log_info "Uploading $AUDIO_FILENAME to S3..."
     
-    aws s3 cp "$VIDEO_FILE" "$S3_URI" || {
-        log_error "Failed to upload file to S3"
+    aws s3 cp "$AUDIO_FILE" "$S3_URI" || {
+        log_error "Failed to upload audio file to S3"
         exit 1
     }
     
-    log_info "File uploaded to: $S3_URI"
+    log_info "Audio file uploaded to: $S3_URI"
 fi
 
 # Start transcription job with subtitle generation
@@ -115,7 +137,7 @@ log_info "Starting transcription job: $JOB_NAME"
 aws transcribe start-transcription-job \
     --transcription-job-name "$JOB_NAME" \
     --language-code "$LANGUAGE_CODE" \
-    --media-format "$FILE_EXTENSION" \
+    --media-format "wav" \
     --media "MediaFileUri=$S3_URI" \
     --output-bucket-name "$BUCKET_NAME" \
     --output-key "transcriptions/${JOB_NAME}/" \
@@ -184,10 +206,12 @@ log_info "SRT subtitles saved to: $SRT_FILE"
 
 # Summary
 log_info "Transcription complete! Files saved:"
-echo "  - S3 video file: $S3_URI"
+echo "  - Original video: $VIDEO_FILE"
+echo "  - S3 audio file: $S3_URI"
 echo "  - S3 transcript: $TRANSCRIPT_URI"
 echo "  - S3 SRT subtitles: $SRT_URI"
+echo "  - Local audio: $AUDIO_FILE"
 echo "  - Local plain text: $TRANSCRIPT_FILE"
 echo "  - Local SRT subtitles: $SRT_FILE"
 
-log_info "Note: Video and transcription files remain on S3 in bucket '$BUCKET_NAME'"
+log_info "Note: Audio and transcription files remain on S3 in bucket '$BUCKET_NAME'"
