@@ -210,6 +210,9 @@ TRANSCRIPT_URI=$(echo "$JOB_DETAILS" | jq -r '.TranscriptionJob.Transcript.Trans
 # Get SRT subtitle URI
 SRT_URI=$(echo "$JOB_DETAILS" | jq -r '.TranscriptionJob.Subtitles.SubtitleFileUris[0]')
 
+log_info "Transcript URI: $TRANSCRIPT_URI"
+log_info "SRT URI: $SRT_URI"
+
 log_info "Downloading files..."
 
 # Download and save plain text transcript
@@ -220,14 +223,20 @@ log_info "Downloading transcript..."
 TEMP_JSON=$(mktemp)
 
 if curl -s "$TRANSCRIPT_URI" > "$TEMP_JSON"; then
+    # Show what we actually downloaded
+    log_info "Downloaded file size: $(wc -c < "$TEMP_JSON") bytes"
+    log_info "First 500 characters of downloaded content:"
+    head -c 500 "$TEMP_JSON"
+    echo ""
+    
     # Verify JSON is valid and extract transcript
     if jq empty "$TEMP_JSON" 2>/dev/null; then
         jq -r '.results.transcripts[0].transcript' "$TEMP_JSON" > "$TRANSCRIPT_FILE"
         log_info "Plain text transcript saved to: $TRANSCRIPT_FILE"
     else
         log_error "Downloaded file is not valid JSON"
-        log_info "Raw content (first 200 chars):"
-        head -c 200 "$TEMP_JSON"
+        log_info "Full content:"
+        cat "$TEMP_JSON"
         echo ""
         exit 1
     fi
