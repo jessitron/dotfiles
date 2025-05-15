@@ -8,8 +8,7 @@ set -e
 # Configuration
 BUCKET_NAME="none-of-the-above"
 LANGUAGE_CODE="en-US"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-OUTPUT_DIR="${SCRIPT_DIR}/transcriptions"
+OUTPUT_DIR="./transcriptions"
 
 # Colors for output
 RED='\033[0;31m'
@@ -43,8 +42,8 @@ check_dependencies() {
         exit 1
     fi
     
-    # Check AWS credentials
-    if ! aws sts get-caller-identity &> /dev/null; then
+    # Check AWS credentials, also output them because I like to see them
+    if ! aws sts get-caller-identity ; then
         log_error "AWS credentials not configured. Please run 'aws configure'."
         exit 1
     fi
