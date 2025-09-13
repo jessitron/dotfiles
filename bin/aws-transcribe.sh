@@ -51,7 +51,7 @@ check_dependencies() {
     
     # Check AWS credentials
     if ! aws sts get-caller-identity &> /dev/null; then
-        log_error "AWS credentials not configured. Please run 'aws configure'."
+        log_error "AWS credentials not configured. Please run 'awslogin'."
         exit 1
     fi
     

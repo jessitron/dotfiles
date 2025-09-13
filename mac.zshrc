@@ -70,6 +70,7 @@ function title {
     echo -ne "\e]1;$*\a"
 }
 
+# git push, except raise an error if it does not work
 function gp() {
     if git push
 	then
@@ -79,6 +80,12 @@ function gp() {
     	alert "your push to $repo failed"
     fi
 }
+
+function gc() {
+    message=${1:-"commit dangit"}
+    git commit -n -m "$message"
+}
+
 
 # clone a repo
 function get() {
@@ -136,7 +143,7 @@ function be() {
     where=meminator-workshop
     echo "I think you mean, $where"
   elif [[ $where == "oquiz" ]] ; then
-    where=observaquiz-ui
+    where=observaquiz
     echo "I think you mean, $where"
   elif [[ $where == "devrel-demo" ]] ; then
     where=devrel-opentelemetry-demo
@@ -173,5 +180,42 @@ function 😱() {
   echo "Yeah, I feel that way too."
 }
 
-# Added by Windsurf
-export PATH="/Users/jessicakerr/.codeium/windsurf/bin:$PATH"
+
+export CLAUDE_CODE_OUTPUT_HONEYCOMB_API_KEY=hcaik_01k1y42mbg8qs650rajqsqybp53w4sxhjdsz84bb3esh92et7nz4c2x60b
+claude() {
+    echo "Running claude with stats sent to modernity/claude-code $CLAUDE_CODE_OUTPUT_HONEYCOMB_API_KEY"
+    OTEL_SERVICE_NAME="claude-code" \
+    OTEL_EXPORTER_OTLP_HEADERS="x-honeycomb-team=$CLAUDE_CODE_OUTPUT_HONEYCOMB_API_KEY,x-honeycomb-dataset=claude_code_metrics" \
+ CLAUDE_CODE_ENABLE_TELEMETRY=1 \
+OTEL_METRICS_EXPORTER="otlp" \
+OTEL_LOGS_EXPORTER="otlp" \
+OTEL_EXPORTER_OTLP_PROTOCOL=grpc \
+OTEL_EXPORTER_OTLP_ENDPOINT="api.honeycomb.io:443" \
+OTEL_LOG_USER_PROMPTS=1 \
+    command claude "$@"
+}
+
+honeycomb-whoami() {
+  if [ -z "$HONEYCOMB_API_KEY" ]; then
+    echo "no HONEYCOMB_API_KEY environment variable"
+    exit 0
+  fi
+  
+  response=$(curl -s -H "X-Honeycomb-Team: $HONEYCOMB_API_KEY" \
+                   "https://api.honeycomb.io/1/auth")
+  
+  if [ $? -ne 0 ]; then
+    echo "Error: Failed to fetch data from Honeycomb API."
+    exit 1
+  fi
+  
+  team_slug=$(echo "$response" | jq -r '.team.slug')
+  env_slug=$(echo "$response" | jq -r '.environment.slug')
+  
+  env_url="https://ui.honeycomb.io/${team_slug}/environments/${env_slug}/"
+  echo "Look for traces in: $env_url"
+}
+
+alias aws-whoami="aws sts get-caller-identity"
+
+alias claude-mcp="claude mcp add honeycomb --transport http https://mcp.honeycomb.io/mcp"
