@@ -1,0 +1,259 @@
+0
+00:00:02,980 --> 00:00:06,719
+I've noticed a spike in the latency of this place order operation.
+
+1
+00:00:07,010 --> 00:00:07,719
+That's bad.
+
+2
+00:00:07,889 --> 00:00:09,520
+Place order gets us money.
+
+3
+00:00:09,970 --> 00:00:12,840
+I wonder whether we're hitting any resource constraints
+
+4
+00:00:13,130 --> 00:00:13,850
+in honeycomb,
+
+5
+00:00:14,090 --> 00:00:17,760
+I flip to the correlations tab to check infrastructure metrics.
+
+6
+00:00:17,969 --> 00:00:18,399
+Hm,
+
+7
+00:00:19,049 --> 00:00:19,969
+nothing interesting yet.
+
+8
+00:00:20,090 --> 00:00:22,319
+Let's filter to only the pod in use.
+
+9
+00:00:23,350 --> 00:00:25,790
+Now let's choose some pod-related metrics.
+
+10
+00:00:26,149 --> 00:00:27,409
+CPU usage
+
+11
+00:00:27,829 --> 00:00:29,139
+looks OK.
+
+12
+00:00:29,750 --> 00:00:30,760
+Memory usage?
+
+13
+00:00:30,829 --> 00:00:31,969
+Oh hey.
+
+14
+00:00:32,709 --> 00:00:32,909
+Mmm,
+
+15
+00:00:33,029 --> 00:00:33,659
+while we're at it,
+
+16
+00:00:33,669 --> 00:00:35,229
+let's get pod restarts.
+
+17
+00:00:36,680 --> 00:00:39,779
+Memory use is growing while the latency increases,
+
+18
+00:00:39,790 --> 00:00:40,479
+and then bam,
+
+19
+00:00:40,560 --> 00:00:42,759
+the pottery starts and it's back to normal.
+
+20
+00:00:43,080 --> 00:00:44,229
+Something is going on.
+
+21
+00:00:44,439 --> 00:00:47,869
+I can dig into these metrics more by clicking through to the query.
+
+22
+00:00:48,779 --> 00:00:50,380
+I don't care about CPU,
+
+23
+00:00:50,419 --> 00:00:52,490
+but let's add available memory.
+
+24
+00:00:52,939 --> 00:00:53,169
+Yeah,
+
+25
+00:00:53,259 --> 00:00:54,490
+it's getting low.
+
+26
+00:00:54,689 --> 00:00:58,729
+Or maybe I want to see the ratio of available memory to usage.
+
+27
+00:00:58,939 --> 00:01:00,409
+I can add a formula.
+
+28
+00:01:00,860 --> 00:01:03,169
+Available memory divided by used memory.
+
+29
+00:01:03,340 --> 00:01:05,860
+I bet this gets close to 0 before the restart.
+
+30
+00:01:06,699 --> 00:01:07,300
+While I'm at it,
+
+31
+00:01:07,339 --> 00:01:09,849
+let's add available plus used memory.
+
+32
+00:01:09,980 --> 00:01:11,730
+I expect that to be constant.
+
+33
+00:01:12,019 --> 00:01:12,769
+Sure enough,
+
+34
+00:01:12,980 --> 00:01:14,339
+this gets close to 0.
+
+35
+00:01:14,980 --> 00:01:16,470
+And this is constant.
+
+36
+00:01:16,510 --> 00:01:17,379
+Math works.
+
+37
+00:01:17,449 --> 00:01:18,110
+In Honeycomb.
+
+38
+00:01:18,230 --> 00:01:22,839
+I can see all my time series metrics and what data type they use and the unit and so on.
+
+39
+00:01:23,069 --> 00:01:25,540
+I can graph them with whatever aggregations I need.
+
+40
+00:01:25,790 --> 00:01:26,059
+Now,
+
+41
+00:01:26,110 --> 00:01:29,180
+if I want to know why this is happening in the checkout service,
+
+42
+00:01:29,349 --> 00:01:31,319
+I go back to that latency heat map.
+
+43
+00:01:31,629 --> 00:01:33,910
+This measurement is built from trace data which has
+
+44
+00:01:33,910 --> 00:01:36,339
+been enriched with custom fields at no cost.
+
+45
+00:01:36,470 --> 00:01:39,209
+I can choose these slow ones and ask what is different.
+
+46
+00:01:39,349 --> 00:01:39,669
+Bubble.
+
+47
+00:01:39,830 --> 00:01:40,639
+Tells me
+
+48
+00:01:40,889 --> 00:01:42,760
+who the checkout service was slow for.
+
+49
+00:01:42,790 --> 00:01:43,819
+It was this user,
+
+50
+00:01:43,930 --> 00:01:44,559
+and oh,
+
+51
+00:01:44,809 --> 00:01:49,309
+it says the events in my selection had a very high cash level compared to the rest.
+
+52
+00:01:49,529 --> 00:01:49,860
+Hm.
+
+53
+00:01:50,169 --> 00:01:51,680
+To find out what the code is doing,
+
+54
+00:01:51,889 --> 00:01:55,720
+I can drill into the trace of one of these slow place order operations.
+
+55
+00:01:56,209 --> 00:01:56,680
+Ah,
+
+56
+00:01:56,889 --> 00:01:59,360
+I see that the long bar is get
+
+57
+00:01:59,360 --> 00:02:02,839
+discounts with many similar database calls underneath.
+
+58
+00:02:03,209 --> 00:02:04,650
+That's what's taking so long.
+
+59
+00:02:05,120 --> 00:02:08,160
+And maybe this is part of that excessive memory use.
+
+60
+00:02:08,610 --> 00:02:12,160
+From here I know which team to contact and where to look in the code.
+
+61
+00:02:12,369 --> 00:02:15,570
+This combination of graphing anything time series,
+
+62
+00:02:15,690 --> 00:02:16,240
+traces,
+
+63
+00:02:16,250 --> 00:02:19,320
+or logs and digging down into rich data.
+
+64
+00:02:19,600 --> 00:02:24,279
+This is what makes Honeycomb the observability platform for what comes next.

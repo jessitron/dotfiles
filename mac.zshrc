@@ -198,7 +198,7 @@ OTEL_LOG_USER_PROMPTS=1 \
 honeycomb-whoami() {
   if [ -z "$HONEYCOMB_API_KEY" ]; then
     echo "no HONEYCOMB_API_KEY environment variable"
-    exit 0
+    return 0
   fi
   
   response=$(curl -s -H "X-Honeycomb-Team: $HONEYCOMB_API_KEY" \
@@ -206,7 +206,7 @@ honeycomb-whoami() {
   
   if [ $? -ne 0 ]; then
     echo "Error: Failed to fetch data from Honeycomb API."
-    exit 1
+    return 1
   fi
   
   team_slug=$(echo "$response" | jq -r '.team.slug')
@@ -219,3 +219,4 @@ honeycomb-whoami() {
 alias aws-whoami="aws sts get-caller-identity"
 
 alias claude-mcp="claude mcp add honeycomb --transport http https://mcp.honeycomb.io/mcp"
+

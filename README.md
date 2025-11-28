@@ -10,6 +10,9 @@ git clone https://github.com/jessitron/dotfiles
 
 ln -s ~/code/jessitron/dotfiles/mac.zshrc ~/.zshrc
 source one-time-git-setup.sh
+
+mkdir ~/.claude (if it doesn't exist)
+ln -s ~/code/jessitron/dotfiles/llm/CLAUDE.md ~/.claude/CLAUDE.md
 ```
 # Usual setup: linux
 
