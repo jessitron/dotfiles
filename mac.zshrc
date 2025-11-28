@@ -35,13 +35,13 @@ alias cod='code .'
 # fucking work
 export GPG_TTY=$(tty)
 
-# Honeycomb
-eval "$(direnv hook zsh)"
-. "$HOME/.asdf/asdf.sh"
-# append completions to fpath
-fpath=(${ASDF_DIR}/completions $fpath)
-# initialise completions with ZSH's compinit
-autoload -Uz compinit && compinit
+# # Honeycomb
+# eval "$(direnv hook zsh)"
+# . "$HOME/.asdf/asdf.sh"
+# # append completions to fpath
+# fpath=(${ASDF_DIR}/completions $fpath)
+# # initialise completions with ZSH's compinit
+# autoload -Uz compinit && compinit
 
 ### Honeycomb AWS, SA access
 export AWS_PROFILE=sandbox
@@ -55,7 +55,7 @@ alias dockerlogin='aws ecr get-login-password --region $(aws configure get regio
 
 
 # rust
-. "$HOME/.cargo/env"
+# b
 
 function alert() {
 	local message=$1
