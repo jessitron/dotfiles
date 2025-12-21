@@ -2,7 +2,7 @@
 echo "Good morning."
 
 # path
-PATH="/usr/local/bin:/opt/homebrew/bin/:$PATH"
+PATH="/usr/local/bin:$HOME/.local/bin:/opt/homebrew/bin/:$PATH"
 
 # essentials
 alias gs='git status'
