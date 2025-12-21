@@ -13,6 +13,7 @@ source one-time-git-setup.sh
 
 mkdir ~/.claude (if it doesn't exist)
 ln -s ~/code/jessitron/dotfiles/llm/CLAUDE.md ~/.claude/CLAUDE.md
+ln -s ~/code/jessitron/dotfiles/llm/claude-settings.json ~/.claude/settings.json
 ```
 # Usual setup: linux
 

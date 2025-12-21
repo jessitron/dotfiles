@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "say 'hey jess, got a minute?'"
+            "command": "~/bin/claude-notification-hook"
           },
           {
             "type": "command",
@@ -21,6 +21,10 @@
           {
             "type": "command",
             "command": "~/bin/claude-hook"
+          },
+          {
+            "type": "command",
+            "command": "~/bin/claude-approval-hook"
           }
         ]
       }
@@ -102,5 +106,6 @@
         ]
       }
     ]
-  }
+  },
+  "alwaysThinkingEnabled": true
 }
