@@ -220,3 +220,4 @@ alias aws-whoami="aws sts get-caller-identity"
 
 alias claude-mcp="claude mcp add honeycomb --transport http https://mcp.honeycomb.io/mcp"
 
+export PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"

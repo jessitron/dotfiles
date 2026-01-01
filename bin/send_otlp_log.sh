@@ -1,1 +1,1 @@
-/Users/jessicakerr/code/jessitron/my-claude-hooks/send_otlp_log.sh
+/Users/jessitron/code/jessitron/my-claude-hooks/send_otlp_log.sh

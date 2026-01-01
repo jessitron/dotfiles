@@ -11,6 +11,9 @@ git clone https://github.com/jessitron/dotfiles
 ln -s ~/code/jessitron/dotfiles/mac.zshrc ~/.zshrc
 source one-time-git-setup.sh
 
+get my-claude-hooks jessitron # some of the important files are here, why
+ln -s ~/code/jessitron/dotfiles/bin ~/bin
+
 mkdir ~/.claude (if it doesn't exist)
 ln -s ~/code/jessitron/dotfiles/llm/CLAUDE.md ~/.claude/CLAUDE.md
 ln -s ~/code/jessitron/dotfiles/llm/claude-settings.json ~/.claude/settings.json
