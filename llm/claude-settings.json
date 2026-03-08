@@ -1,4 +1,15 @@
 {
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+ "disabledMcpServers": [
+      "claude.ai Slack" ,
+      "claude.ai Asana" ,
+      "claude.ai Honeycomb" ,
+      "claude.ai Honeycomb Dogfood" ,
+      "claude.ai Context7"
+    ],
+  "model": "opus",
   "hooks": {
     "Notification": [
       {
@@ -7,6 +18,28 @@
             "type": "command",
             "command": "~/bin/claude-notification-hook"
           },
+          {
+            "type": "command",
+            "command": "~/bin/claude-hook"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/bin/claude-hook"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "*",
+        "hooks": [
           {
             "type": "command",
             "command": "~/bin/claude-hook"
@@ -29,51 +62,7 @@
         ]
       }
     ],
-    "PostToolUse": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/bin/claude-hook"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/bin/claude-hook"
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/bin/claude-hook"
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/bin/claude-hook"
-          }
-        ]
-      }
-    ],
-    "PreCompact": [
+    "SessionEnd": [
       {
         "matcher": "*",
         "hooks": [
@@ -95,7 +84,29 @@
         ]
       }
     ],
-    "SessionEnd": [
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/bin/claude-hook"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/bin/claude-hook"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
       {
         "matcher": "*",
         "hooks": [
@@ -107,5 +118,11 @@
       }
     ]
   },
-  "alwaysThinkingEnabled": true
+  "enabledPlugins": {},
+  "alwaysThinkingEnabled": true,
+  "skipDangerousModePermissionPrompt": true,
+  "preferences": {
+    "tmuxSplitPanes": true
+  },
+  "effortLevel": "medium"
 }
