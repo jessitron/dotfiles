@@ -59,6 +59,32 @@ The body is a **flat JSON object**. Each top-level key becomes a column in the d
 
 A successful response is `HTTP 200` with an empty body. Any 4xx is a hard rejection.
 
+## Always include an event ID
+
+**Generate a unique ID for every event and include it as a field** (e.g. `event_id`). Use a UUID, or any unique-enough string (`$(date +%s%N)`, a ULID, a hash of relevant inputs).
+
+```bash
+EVENT_ID=$(uuidgen)
+curl -fsS -X POST "https://api.honeycomb.io/1/events/$DATASET" \
+  -H "X-Honeycomb-Team: $HONEYCOMB_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "$(jq -nc --arg id "$EVENT_ID" '{event_id:$id, event:"deploy_finished", exit_code:0}')"
+```
+
+It costs almost nothing and pays off later:
+
+- **Find this exact event again.** Without an ID, you'd be searching by time + content and hoping it's unique. With one, `event_id = <value>` finds it instantly.
+- **Correlate with logs and traces.** If your application also logs the ID (or sets it as a span attribute), you can pivot between the Honeycomb event, your logs, and any related trace.
+- **Detect accidental duplicates.** Honeycomb does not dedupe — if you retry on a network error and the first one actually succeeded, you'll have two rows. Same `event_id` on two rows tells you what happened.
+
+When testing — especially when an agent is verifying that the event arrived — **also print the ID to stdout** before sending:
+
+```bash
+echo "Sending event with event_id=$EVENT_ID"
+```
+
+The agent picks up the ID from the test command's output and queries Honeycomb with `event_id = <that value>`. This makes verification deterministic — no risk of matching an unrelated event with similar fields, no race with prior runs, no time-window guessing. See "Verifying events arrived" below for the query.
+
 ## Headers
 
 | Header                           | Required | Notes                                                                             |
@@ -158,38 +184,6 @@ curl -i -X POST "https://api.honeycomb.io/1/events/skill-test" \
 
 **From any language:** any HTTP client + JSON serializer is enough. There is no SDK to install. Just `POST` the URL above with the right header and a flat-object JSON body.
 
-## Testing tip: include a generated event ID
-
-When testing — especially when an agent will verify the event arrived — **generate a unique ID per test event, include it as a field, and print it to stdout** before sending. This makes verification deterministic instead of time-and-content guessing.
-
-The pattern:
-
-1. Generate a fresh UUID (or any unique-enough string) in the test code.
-2. Include it on the event as a field, e.g. `test_event_id`.
-3. Print the ID where the agent running the test can see it (stdout from the test command).
-4. Verify by querying Honeycomb with a filter `test_event_id = <that value>`.
-
-```bash
-TEST_EVENT_ID=$(uuidgen)
-echo "Sending test event with test_event_id=$TEST_EVENT_ID"
-
-curl -fsS -X POST "https://api.honeycomb.io/1/events/$DATASET" \
-  -H "X-Honeycomb-Team: $HONEYCOMB_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d "$(jq -nc \
-        --arg id "$TEST_EVENT_ID" \
-        --arg event "deploy_finished" \
-        '{test_event_id:$id, event:$event, exit_code:0}')"
-```
-
-Why this matters when an agent runs the test:
-
-- **No false positives.** Without an ID, the agent might match an unrelated event with similar fields and conclude things work when they don't.
-- **No race with prior runs.** Re-runs of the same test pollute the dataset; the ID disambiguates.
-- **Clear logs.** When the test command prints `test_event_id=<uuid>`, the agent can pick that up from the test output and use it as a filter — no need to hand it through separately.
-
-If you can't run `uuidgen`, any unique string works: `$(date +%s%N)`, a timestamp + random integer, the test name + run number, etc.
-
 ## Verifying events arrived (Honeycomb MCP)
 
 After testing, confirm the event actually landed. A `200` from the API only means Honeycomb enqueued the event — there's a small ingest pipeline before it shows up in queries (usually <1s, but worth verifying when you're debugging a new integration).
@@ -218,7 +212,7 @@ mcp__honeycomb__get_dataset_columns
 
 If the dataset doesn't exist, this returns an error — meaning either (a) writes haven't reached Honeycomb at all, or (b) you're looking at the wrong environment. If it does exist, the columns table includes a `LastWritten` timestamp per column. A recent timestamp on the columns you just sent confirms the event landed.
 
-**Step 4: query for the specific event by ID.** This is the right verification when the test included a `test_event_id` field (see "Testing tip" above). Pick up the ID from the test command's stdout, then:
+**Step 4: query for the specific event by ID.** Assuming the event was sent with an `event_id` field (see "Always include an event ID" above) and the test command printed it to stdout, pick up the ID from the test output and:
 
 ```
 mcp__honeycomb__run_query
@@ -227,7 +221,7 @@ mcp__honeycomb__run_query
   include_samples: true
   query_spec: {
     "calculations": [{"op": "COUNT"}],
-    "filters":      [{"column": "test_event_id", "op": "=", "value": "<the-id-from-stdout>"}],
+    "filters":      [{"column": "event_id", "op": "=", "value": "<the-id-from-stdout>"}],
     "time_range":   "10m"
   }
 ```
@@ -236,7 +230,7 @@ A `COUNT` of `1` and a sample row containing your event = success. `0` = the eve
 
 If the event has an explicit `X-Honeycomb-Event-Time` in the past, widen `time_range` accordingly. The ID filter still works regardless of timestamp.
 
-If the test didn't include an ID, drop the filter and use field values + `time_range` to find the event — but prefer the ID approach for new tests, since it's the only way to be certain you're looking at *your* event and not a similar one.
+If the event was sent without an ID, drop the filter and use field values + `time_range` to find the event — but the ID approach is the only way to be certain you're looking at *your* event and not a similar one.
 
 ## Common mistakes
 
