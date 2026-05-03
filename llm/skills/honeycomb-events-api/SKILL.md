@@ -158,6 +158,38 @@ curl -i -X POST "https://api.honeycomb.io/1/events/skill-test" \
 
 **From any language:** any HTTP client + JSON serializer is enough. There is no SDK to install. Just `POST` the URL above with the right header and a flat-object JSON body.
 
+## Testing tip: include a generated event ID
+
+When testing — especially when an agent will verify the event arrived — **generate a unique ID per test event, include it as a field, and print it to stdout** before sending. This makes verification deterministic instead of time-and-content guessing.
+
+The pattern:
+
+1. Generate a fresh UUID (or any unique-enough string) in the test code.
+2. Include it on the event as a field, e.g. `test_event_id`.
+3. Print the ID where the agent running the test can see it (stdout from the test command).
+4. Verify by querying Honeycomb with a filter `test_event_id = <that value>`.
+
+```bash
+TEST_EVENT_ID=$(uuidgen)
+echo "Sending test event with test_event_id=$TEST_EVENT_ID"
+
+curl -fsS -X POST "https://api.honeycomb.io/1/events/$DATASET" \
+  -H "X-Honeycomb-Team: $HONEYCOMB_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "$(jq -nc \
+        --arg id "$TEST_EVENT_ID" \
+        --arg event "deploy_finished" \
+        '{test_event_id:$id, event:$event, exit_code:0}')"
+```
+
+Why this matters when an agent runs the test:
+
+- **No false positives.** Without an ID, the agent might match an unrelated event with similar fields and conclude things work when they don't.
+- **No race with prior runs.** Re-runs of the same test pollute the dataset; the ID disambiguates.
+- **Clear logs.** When the test command prints `test_event_id=<uuid>`, the agent can pick that up from the test output and use it as a filter — no need to hand it through separately.
+
+If you can't run `uuidgen`, any unique string works: `$(date +%s%N)`, a timestamp + random integer, the test name + run number, etc.
+
 ## Verifying events arrived (Honeycomb MCP)
 
 After testing, confirm the event actually landed. A `200` from the API only means Honeycomb enqueued the event — there's a small ingest pipeline before it shows up in queries (usually <1s, but worth verifying when you're debugging a new integration).
@@ -186,7 +218,7 @@ mcp__honeycomb__get_dataset_columns
 
 If the dataset doesn't exist, this returns an error — meaning either (a) writes haven't reached Honeycomb at all, or (b) you're looking at the wrong environment. If it does exist, the columns table includes a `LastWritten` timestamp per column. A recent timestamp on the columns you just sent confirms the event landed.
 
-**Step 4 (optional): see the actual event content.** If you want to verify field values, not just that *something* arrived, run a query with samples:
+**Step 4: query for the specific event by ID.** This is the right verification when the test included a `test_event_id` field (see "Testing tip" above). Pick up the ID from the test command's stdout, then:
 
 ```
 mcp__honeycomb__run_query
@@ -195,13 +227,16 @@ mcp__honeycomb__run_query
   include_samples: true
   query_spec: {
     "calculations": [{"op": "COUNT"}],
+    "filters":      [{"column": "test_event_id", "op": "=", "value": "<the-id-from-stdout>"}],
     "time_range":   "10m"
   }
 ```
 
-The samples section shows raw event rows, so you can confirm the values you sent (including verifying that nested fields got flattened the way you intended).
+A `COUNT` of `1` and a sample row containing your event = success. `0` = the event didn't arrive (or you're in the wrong dataset/environment). The samples section also lets you confirm the field values landed correctly (including that nested fields flattened how you intended).
 
-If you sent an event with an explicit `X-Honeycomb-Event-Time` in the past, widen `time_range` accordingly — or filter on `dc.env.ingest_timestamp` (the receipt time, available as a built-in derived column) instead of the event time, so you find the event by *when it arrived* regardless of what timestamp it claims.
+If the event has an explicit `X-Honeycomb-Event-Time` in the past, widen `time_range` accordingly. The ID filter still works regardless of timestamp.
+
+If the test didn't include an ID, drop the filter and use field values + `time_range` to find the event — but prefer the ID approach for new tests, since it's the only way to be certain you're looking at *your* event and not a similar one.
 
 ## Common mistakes
 
