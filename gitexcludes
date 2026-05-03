@@ -2,3 +2,5 @@ carrot
 .be
 .DS_Store
 *.swp
+.tool-versions
+**/.claude/settings.local.json

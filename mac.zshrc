@@ -2,7 +2,7 @@
 echo "Good morning."
 
 # path
-PATH="/usr/local/bin:$HOME/.local/bin:/opt/homebrew/bin/:$PATH"
+PATH="/usr/local/bin:$HOME/.local/bin:/Users/jessitron/.cargo/bin:/opt/homebrew/bin/:$PATH"
 
 # essentials
 alias gs='git status'
@@ -12,15 +12,23 @@ alias reload='source ~/.zshrc'
 alias k=kubectl
 alias x='chmod +x *(om[1])' # this is interesting here
 
+# not essential
+alias bdl='bd list --sort created -r'
+
 ## prompt
-autoload -Uz vcs_info
-precmd() { vcs_info }
-zstyle ':vcs_info:git:*' check-for-changes true
-zstyle ':vcs_info:git:*' formats '%b%c%u '
-zstyle ':vcs_info:git:*' stagedstr ' 🌞'
-zstyle ':vcs_info:git:*' unstagedstr ' ⏿'
-setopt PROMPT_SUBST
-PROMPT='%F{#10aa20}%*%f %? %F{#EEEEE1}%1~%f %F{#FF2020}%f${vcs_info_msg_0_}$ '
+if [[ "$ITERM_PROFILE" == "graceful.dev" ]]; then
+  echo "Grow your programming practice"
+  PROMPT='$ '
+else
+  autoload -Uz vcs_info
+  precmd() { vcs_info }
+  zstyle ':vcs_info:git:*' check-for-changes true
+  zstyle ':vcs_info:git:*' formats '%b%c%u '
+  zstyle ':vcs_info:git:*' stagedstr ' 🌞'
+  zstyle ':vcs_info:git:*' unstagedstr ' ⏿'
+  setopt PROMPT_SUBST
+  PROMPT='%F{#10aa20}%*%f %? %F{#EEEEE1}%1~%f %F{#FF2020}%f${vcs_info_msg_0_}$ '
+fi
 # PROMPT='> '
 
 #  history ... does this work?
@@ -90,11 +98,22 @@ function gc() {
 # clone a repo
 function get() {
    repo=$1
-   if [ -z "$2" ] # org not specified
+   org=$2 
+   # if $1 is a github URL, set repo and org accordingly
+   if [[ "$repo" == https://github.com/* ]]
+   then
+     org=$(echo $repo | sed 's#https://github.com/\([^/]*\)/\(.*\)#\1#')
+     repo=$(echo $repo | sed 's#https://github.com/\([^/]*\)/\(.*\)#\2#')
+     if [[ $repo == *.git ]]
+     then
+       repo=$(echo $repo | sed 's/\.git$//')
+     fi
+     echo $repo $org
+   fi
+   if [ -z "$org" ] # org not specified
    then
    	 org=$(pwd | sed 's#.*/##') # org is the current directory
    else
-   	 org=$2
    	 if [[ "$org" == "sol" ]]
    	 then
    	    org="satellite-of-love"
@@ -137,8 +156,20 @@ function be() {
   # overrides
   if [[ $where == "explore" ]] ; then
     where=exploreddd.github.com
+  elif [[ $where == "ms-demo" ]] ; then
+    where=microservices-demo
+  elif [[ $where == "mtg-colors" ]] ; then
+    where=mtg-sparrow
+  elif [[ $where == "life" ]] ; then
+    where=basic-text-organization-work
   elif [[ $where == "otel-demo" ]] ; then
     where=opentelemetry-demo
+  elif [[ $where == "tronijess" ]] ; then
+    where=project-tronijess
+    echo "I think you mean, $where"
+  elif [[ $where == "cyndibot" ]] ; then
+    where=cynditaylor-com-bot
+    echo "I think you mean, $where"
   elif [[ $where == "oday" ]] ; then
     where=meminator-workshop
     echo "I think you mean, $where"
@@ -152,8 +183,8 @@ function be() {
 
   # check my favorite directories
   for dir in $(cat ~/.be_dirs); do
-    if [ -d "$dir/$where" ] ; then
-      cd $dir
+    if [ -d "$HOME/$dir/$where" ] ; then
+      cd $HOME/$dir
       echo $dir/$where
       break
     fi
@@ -183,7 +214,7 @@ function 😱() {
 
 export CLAUDE_CODE_OUTPUT_HONEYCOMB_API_KEY=hcaik_01k1y42mbg8qs650rajqsqybp53w4sxhjdsz84bb3esh92et7nz4c2x60b
 claude() {
-    echo "Running claude with stats sent to modernity/claude-code $CLAUDE_CODE_OUTPUT_HONEYCOMB_API_KEY"
+    echo "Running claude with stats sent to modernity/claude-code"
     OTEL_SERVICE_NAME="claude-code" \
     OTEL_EXPORTER_OTLP_HEADERS="x-honeycomb-team=$CLAUDE_CODE_OUTPUT_HONEYCOMB_API_KEY,x-honeycomb-dataset=claude_code_metrics" \
  CLAUDE_CODE_ENABLE_TELEMETRY=1 \
@@ -192,7 +223,7 @@ OTEL_LOGS_EXPORTER="otlp" \
 OTEL_EXPORTER_OTLP_PROTOCOL=grpc \
 OTEL_EXPORTER_OTLP_ENDPOINT="api.honeycomb.io:443" \
 OTEL_LOG_USER_PROMPTS=1 \
-    command claude "$@"
+    command claude --permission-mode acceptEdits "$@"
 }
 
 honeycomb-whoami() {
@@ -216,8 +247,48 @@ honeycomb-whoami() {
   echo "Look for traces in: $env_url"
 }
 
-alias aws-whoami="aws sts get-caller-identity"
+aws-whoami() {
+    local identity=$(aws sts get-caller-identity --output json 2>&1)
+    
+    if [ $? -ne 0 ]; then
+        echo "Error calling AWS STS:"
+        echo "$identity"
+        return 1
+    fi
+    
+    local account=$(echo "$identity" | jq -r '.Account')
+    local arn=$(echo "$identity" | jq -r '.Arn')
+    local user_id=$(echo "$identity" | jq -r '.UserId')
+    
+    # Map account numbers to friendly names
+    local account_name
+    case "$account" in
+        465062709130)
+            account_name="SalesEngineerAccess"
+            ;;
+        414852377253)
+            account_name="jessitron-sandbox (EKS cluster) [profile: sandbox]"
+            ;;
+        657166037864)
+            account_name="devrel-sandbox"
+            ;;
+        *)
+            account_name="Unknown"
+            ;;
+    esac
+    
+    echo "Account: $account ($account_name)"
+    echo "ARN: $arn"
+    echo "UserId: $user_id"
+}
 
 alias claude-mcp="claude mcp add honeycomb --transport http https://mcp.honeycomb.io/mcp"
 
 export PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"
+
+# bun completions
+[ -s "/Users/jessitron/.bun/_bun" ] && source "/Users/jessitron/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"

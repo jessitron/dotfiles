@@ -1,4 +1,5 @@
 # dotfiles
+
 gotta save them somewhere.
 
 ## What's in here
@@ -31,7 +32,7 @@ gotta save them somewhere.
 ### `llm/` — Claude Code config
 
 - `CLAUDE.md` — global instructions for Claude (linked into `~/.claude/CLAUDE.md`). Personality, working style, `RESPONSE_PREFIX` system, "end session" notes convention, commit style ("- claude" tag).
-- `claude-settings.json` — global Claude Code settings (linked into `~/.claude/settings.json`). Sets the model, wires up hooks for every event (`PreToolUse`, `PostToolUse`, `Notification`, `SessionStart`, `SessionEnd`, `Stop`, etc.) to the scripts in `bin/`, enables the Honeycomb and gopls plugins, and disables some MCP servers.
+- `claude-settings.json` — global Claude Code settings (linked into `~/.claude/settings.json`). Sets the model, wires up hooks for every event (`PreToolUse`, `PostToolUse`, `Notification`, `SessionStart`, `SessionEnd`, `Stop`, etc.) to the scripts in `bin/`, enables the Honeycomb and gopls plugins, and disables some MCP servers. NOTE: those scripts in bin/ live in jessitron/my-claude-hooks
 - `skills/` — personal Claude Code skills, symlinked into `~/.claude/skills/` so they're available in every project. Each skill is a directory with a `SKILL.md` describing when to invoke it. To wire it up:
   ```
   mkdir -p ~/.claude

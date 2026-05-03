@@ -2,14 +2,7 @@
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   },
- "disabledMcpServers": [
-      "claude.ai Slack" ,
-      "claude.ai Asana" ,
-      "claude.ai Honeycomb" ,
-      "claude.ai Honeycomb Dogfood" ,
-      "claude.ai Context7"
-    ],
-  "model": "opus",
+  "model": "opus[1m]",
   "hooks": {
     "Notification": [
       {
@@ -118,11 +111,36 @@
       }
     ]
   },
-  "enabledPlugins": {},
+  "enabledPlugins": {
+    "honeycomb@honeycomb-plugins": true,
+    "gopls-lsp@claude-plugins-official": true
+  },
+  "extraKnownMarketplaces": {
+    "honeycomb-plugins": {
+      "source": {
+        "source": "github",
+        "repo": "honeycombio/agent-skill"
+      }
+    },
+    "agents-observe": {
+      "source": {
+        "source": "github",
+        "repo": "simple10/agents-observe"
+      }
+    }
+  },
   "alwaysThinkingEnabled": true,
+  "effortLevel": "medium",
   "skipDangerousModePermissionPrompt": true,
+  "disabledMcpServers": [
+    "claude.ai Slack",
+    "claude.ai Asana",
+    "claude.ai Honeycomb",
+    "claude.ai Honeycomb Dogfood",
+    "claude.ai Context7"
+  ],
   "preferences": {
     "tmuxSplitPanes": true
   },
-  "effortLevel": "medium"
+  "theme": "dark-daltonized"
 }
