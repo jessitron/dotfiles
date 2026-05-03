@@ -71,6 +71,7 @@ ln -s ~/code/jessitron/dotfiles/bin ~/bin
 mkdir ~/.claude (if it doesn't exist)
 ln -s ~/code/jessitron/dotfiles/llm/CLAUDE.md ~/.claude/CLAUDE.md
 ln -s ~/code/jessitron/dotfiles/llm/claude-settings.json ~/.claude/settings.json
+ln -s ~/code/jessitron/dotfiles/llm/skills ~/.claude/skills
 ```
 
 ## Linux / WSL setup
