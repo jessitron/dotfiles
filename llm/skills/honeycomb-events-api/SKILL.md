@@ -52,7 +52,7 @@ Use any HTTP library to send these. Examples are given in curl for generic appli
 curl -fsS -X POST "https://api.honeycomb.io/1/events/$DATASET" \
   -H "X-Honeycomb-Team: $HONEYCOMB_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"event":"deploy_finished","service":"api","duration_ms":42,"exit_code":0}'
+  -d '{"event":"deploy_finished","service":"api","duration_ms":42,"exit_code":0,"event_id":"123e4567"}'
 ```
 
 The body is a **flat JSON object**. Each top-level key becomes a column in the dataset.
@@ -70,27 +70,13 @@ The pattern has three steps, all important:
 3. Send the event with the ID as a field.
 
 ```bash
-# 1. generate
 EVENT_ID=$(uuidgen)
-
-# 2. log it FIRST, so you have a record even if the request fails or hangs
 echo "Sending event with event_id=$EVENT_ID"
-
-# 3. send
 curl -fsS -X POST "https://api.honeycomb.io/1/events/$DATASET" \
   -H "X-Honeycomb-Team: $HONEYCOMB_API_KEY" \
   -H "Content-Type: application/json" \
   -d "$(jq -nc --arg id "$EVENT_ID" '{event_id:$id, event:"deploy_finished", exit_code:0}')"
 ```
-
-Step 2 is the part that's easy to forget. **An ID generated in a transient place — a variable that goes out of scope, a UUID inlined into the JSON body — is unverifiable.** If you don't preserve the ID somewhere durable (logs, test stdout, a return value), you have no way to look up the event later. Always emit the ID before or alongside the request.
-
-It costs almost nothing and pays off later:
-
-- **Find this exact event again.** Without an ID, you'd be searching by time + content and hoping it's unique. With one, `event_id = <value>` finds it instantly.
-- **Correlate with logs and traces.** If your application also logs the ID (or sets it as a span attribute), you can pivot between the Honeycomb event, your logs, and any related trace.
-- **Detect accidental duplicates.** Honeycomb does not dedupe — if you retry on a network error and the first one actually succeeded, you'll have two rows. Same `event_id` on two rows tells you what happened.
-- **Deterministic test verification.** When an agent runs the test, it reads the ID off stdout and queries Honeycomb with `event_id = <that value>`. No risk of matching an unrelated event, no race with prior runs, no time-window guessing. See "Verifying events arrived" below for the query.
 
 ## Headers
 
@@ -237,7 +223,7 @@ A `COUNT` of `1` and a sample row containing your event = success. `0` = the eve
 
 If the event has an explicit `X-Honeycomb-Event-Time` in the past, widen `time_range` accordingly. The ID filter still works regardless of timestamp.
 
-If the event was sent without an ID, drop the filter and use field values + `time_range` to find the event — but the ID approach is the only way to be certain you're looking at *your* event and not a similar one.
+If the event was sent without an ID, drop the filter and use field values + `time_range` to find the event — but the ID approach is the only way to be certain you're looking at _your_ event and not a similar one.
 
 ## Common mistakes
 
