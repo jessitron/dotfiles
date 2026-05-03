@@ -164,15 +164,17 @@ After testing, confirm the event actually landed. A `200` from the API only mean
 
 Use the **local Honeycomb MCP** (tools prefixed `mcp__honeycomb__`). Workspace-specific tools like `mcp__claude_ai_Honeycomb_Dogfood__` are different MCP installs and may point at a different team than your ingest key.
 
-**Step 1: confirm the MCP is pointing at the right team.** The ingest key writes into one specific team + environment. If the MCP is configured for a different team, you can't verify with it — set up the right MCP, or check the UI instead.
+**Step 1: figure out which team and environment the ingest key actually belongs to.** Use the `honeycomb-whoami` skill — it calls `/1/auth` and returns the team slug, environment slug, and Honeycomb deployment (production / dogfood / EU) for the key.
+
+**Step 2: confirm the MCP is pointing at that same team.**
 
 ```
 mcp__honeycomb__get_workspace_context  (no args)
 ```
 
-Look at `Team: <name>` in the response. It must match the team that owns the ingest key you used. If it doesn't, stop — verifying via this MCP won't work.
+Compare `Team: <name>` in the response against what `honeycomb-whoami` returned. They must match. If they don't, stop — verifying via this MCP won't work; either reconfigure the MCP, use a different MCP install for that team, or check the Honeycomb UI directly. The `honeycomb-whoami` output also includes a UI URL you can hand to the user.
 
-**Step 2: identify the environment slug.** The same team has multiple environments; the dataset only exists in one. If you don't already know the slug, the workspace context lists all environments under the team — find the one that owns the ingest key.
+The workspace-context response lists environments under the team. The environment slug should match the one `honeycomb-whoami` returned.
 
 **Step 3: confirm the dataset exists and has been written to recently.** This is the cheapest check — no query, just metadata.
 
