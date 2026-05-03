@@ -61,29 +61,36 @@ A successful response is `HTTP 200` with an empty body. Any 4xx is a hard reject
 
 ## Always include an event ID
 
-**Generate a unique ID for every event and include it as a field** (e.g. `event_id`). Use a UUID, or any unique-enough string (`$(date +%s%N)`, a ULID, a hash of relevant inputs).
+**Generate a unique ID for every event, log it, and include it as a field** (e.g. `event_id`). Use a UUID, or any unique-enough string (`$(date +%s%N)`, a ULID, a hash of relevant inputs).
+
+The pattern has three steps, all important:
+
+1. Generate the ID into a variable.
+2. Log/print the ID before the request — so the caller, the test command's stdout, the Lambda's CloudWatch log, etc. records what ID went out.
+3. Send the event with the ID as a field.
 
 ```bash
+# 1. generate
 EVENT_ID=$(uuidgen)
+
+# 2. log it FIRST, so you have a record even if the request fails or hangs
+echo "Sending event with event_id=$EVENT_ID"
+
+# 3. send
 curl -fsS -X POST "https://api.honeycomb.io/1/events/$DATASET" \
   -H "X-Honeycomb-Team: $HONEYCOMB_API_KEY" \
   -H "Content-Type: application/json" \
   -d "$(jq -nc --arg id "$EVENT_ID" '{event_id:$id, event:"deploy_finished", exit_code:0}')"
 ```
 
+Step 2 is the part that's easy to forget. **An ID generated in a transient place — a variable that goes out of scope, a UUID inlined into the JSON body — is unverifiable.** If you don't preserve the ID somewhere durable (logs, test stdout, a return value), you have no way to look up the event later. Always emit the ID before or alongside the request.
+
 It costs almost nothing and pays off later:
 
 - **Find this exact event again.** Without an ID, you'd be searching by time + content and hoping it's unique. With one, `event_id = <value>` finds it instantly.
 - **Correlate with logs and traces.** If your application also logs the ID (or sets it as a span attribute), you can pivot between the Honeycomb event, your logs, and any related trace.
 - **Detect accidental duplicates.** Honeycomb does not dedupe — if you retry on a network error and the first one actually succeeded, you'll have two rows. Same `event_id` on two rows tells you what happened.
-
-When testing — especially when an agent is verifying that the event arrived — **also print the ID to stdout** before sending:
-
-```bash
-echo "Sending event with event_id=$EVENT_ID"
-```
-
-The agent picks up the ID from the test command's output and queries Honeycomb with `event_id = <that value>`. This makes verification deterministic — no risk of matching an unrelated event with similar fields, no race with prior runs, no time-window guessing. See "Verifying events arrived" below for the query.
+- **Deterministic test verification.** When an agent runs the test, it reads the ID off stdout and queries Honeycomb with `event_id = <that value>`. No risk of matching an unrelated event, no race with prior runs, no time-window guessing. See "Verifying events arrived" below for the query.
 
 ## Headers
 
