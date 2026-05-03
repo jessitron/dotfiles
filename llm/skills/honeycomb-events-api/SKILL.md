@@ -224,7 +224,7 @@ mcp__honeycomb__run_query
 
 A `COUNT` of `1` and a sample row containing your event = success. `0` = the event didn't arrive (or you're in the wrong dataset/environment).
 
-> **Schema cache gotcha:** if `run_query` rejects with *"columns not found in cached schema"* and suggests unrelated columns, the MCP's schema cache hasn't picked up your brand-new column yet. Calling `get_dataset_columns` first (Step 3) refreshes the cache as a side effect — and for single-event verification, that step alone is usually enough. Don't fight the cache; let Step 3 do its job and only fall back to `run_query` when you actually need the full row.
+> **Schema cache gotcha:** if `run_query` rejects with *"columns not found in cached schema"* and suggests unrelated columns, the MCP's schema cache hasn't picked up your brand-new column yet. The cache refreshes on roughly a 1-minute cycle, so a brand-new field is invisible to `run_query` for up to a minute after the first event lands. Calling `get_dataset_columns` first (Step 3) bypasses the cache — and for single-event verification, that step alone is usually enough. Don't fight the cache; let Step 3 do its job and only fall back to `run_query` when you actually need the full row.
 
 If the event has an explicit `X-Honeycomb-Event-Time` in the past, widen `time_range` accordingly. The ID filter still works regardless of timestamp.
 
