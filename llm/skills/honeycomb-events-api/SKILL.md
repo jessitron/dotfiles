@@ -195,17 +195,20 @@ Compare `Team: <name>` in the response against what `honeycomb-whoami` returned.
 
 The workspace-context response lists environments under the team. The environment slug should match the one `honeycomb-whoami` returned.
 
-**Step 3: confirm the dataset exists and has been written to recently.** This is the cheapest check — no query, just metadata.
+**Step 3: confirm the event landed by ID.** If the event was sent with an `event_id` field (see "Always include an event ID" above) and the test command printed the ID, this is the fastest verification — and it confirms the value, not just that *something* arrived:
 
 ```
 mcp__honeycomb__get_dataset_columns
   environment_slug: <env-slug>
   dataset_slug:    <dataset-slug>
+  columns:          ["event_id"]
 ```
 
-If the dataset doesn't exist, this returns an error — meaning either (a) writes haven't reached Honeycomb at all, or (b) you're looking at the wrong environment. If it does exist, the columns table includes a `LastWritten` timestamp per column. A recent timestamp on the columns you just sent confirms the event landed.
+This returns recent sample values for `event_id`. If your ID is in the SampleValues column, the event arrived with the right ID. Done.
 
-**Step 4: query for the specific event by ID.** Assuming the event was sent with an `event_id` field (see "Always include an event ID" above) and the test command printed it to stdout, pick up the ID from the test output and:
+If the dataset doesn't exist, this call errors — meaning either (a) writes haven't reached Honeycomb at all, or (b) you're looking at the wrong environment.
+
+**Step 4 (optional): full query for the event row.** If you want to see *every* field on the event (verify field values, check that nested fields flattened the way you intended), run a full query with samples:
 
 ```
 mcp__honeycomb__run_query
@@ -219,7 +222,9 @@ mcp__honeycomb__run_query
   }
 ```
 
-A `COUNT` of `1` and a sample row containing your event = success. `0` = the event didn't arrive (or you're in the wrong dataset/environment). The samples section also lets you confirm the field values landed correctly (including that nested fields flattened how you intended).
+A `COUNT` of `1` and a sample row containing your event = success. `0` = the event didn't arrive (or you're in the wrong dataset/environment).
+
+> **Schema cache gotcha:** if `run_query` rejects with *"columns not found in cached schema"* and suggests unrelated columns, the MCP's schema cache hasn't picked up your brand-new column yet. Calling `get_dataset_columns` first (Step 3) refreshes the cache as a side effect — and for single-event verification, that step alone is usually enough. Don't fight the cache; let Step 3 do its job and only fall back to `run_query` when you actually need the full row.
 
 If the event has an explicit `X-Honeycomb-Event-Time` in the past, widen `time_range` accordingly. The ID filter still works regardless of timestamp.
 
