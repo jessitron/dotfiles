@@ -179,6 +179,9 @@ function be() {
   elif [[ $where == "devrel-demo" ]] ; then
     where=devrel-opentelemetry-demo
     echo "I think you mean, $where"
+  elif [[ $where == "seamap" || $where == "tronijess-skills" ]] ; then
+    where=tracking-skills
+    echo "I think you mean, $where"
   fi
 
   # check my favorite directories
@@ -214,16 +217,9 @@ function 😱() {
 
 export CLAUDE_CODE_OUTPUT_HONEYCOMB_API_KEY=hcaik_01k1y42mbg8qs650rajqsqybp53w4sxhjdsz84bb3esh92et7nz4c2x60b
 claude() {
-    echo "Running claude with stats sent to modernity/claude-code"
-    OTEL_SERVICE_NAME="claude-code" \
-    OTEL_EXPORTER_OTLP_HEADERS="x-honeycomb-team=$CLAUDE_CODE_OUTPUT_HONEYCOMB_API_KEY,x-honeycomb-dataset=claude_code_metrics" \
- CLAUDE_CODE_ENABLE_TELEMETRY=1 \
-OTEL_METRICS_EXPORTER="otlp" \
-OTEL_LOGS_EXPORTER="otlp" \
-OTEL_EXPORTER_OTLP_PROTOCOL=grpc \
-OTEL_EXPORTER_OTLP_ENDPOINT="api.honeycomb.io:443" \
-OTEL_LOG_USER_PROMPTS=1 \
-    command claude --permission-mode acceptEdits "$@"
+    echo "Running claude with telemetry sent to the local claude code collector"
+    # the parentheses start a subshell, so that I'm not changing env vars in the current shell
+    (source ~/code/jessitron/claude-collector/claude-env.sh && command claude --permission-mode acceptEdits "$@")
 }
 
 honeycomb-whoami() {
@@ -292,3 +288,5 @@ export PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"
 # bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
+
+[[ "$TERM_PROGRAM" == "kiro" ]] && . "$(kiro --locate-shell-integration-path zsh)"
