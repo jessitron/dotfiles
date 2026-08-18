@@ -1,0 +1,189 @@
+#!/usr/bin/env bash
+#
+# iterm-set-font [FONT-POSTSCRIPT-NAME]
+#
+# Sets the font on EVERY iTerm2 profile at once, preserving each profile's
+# existing point size.
+#
+#
+# WHY THIS EXISTS
+# ---------------
+# Installing starship (https://starship.rs) in August 2026. Starship's prompt
+# uses glyphs from a Nerd Font -- a git branch icon, a Node hexagon, arrows for
+# unpushed commits -- and without one they render as tofu (empty boxes) or as
+# question-mark-in-a-box, which is macOS's last-resort fallback for a codepoint
+# no font in the fallback chain provides.
+#
+# iTerm2 has NO global font setting. Font is a per-profile property, and this
+# machine has 13 profiles. Clicking Settings > Profiles > Text > Font thirteen
+# times is a bad afternoon, hence a script.
+#
+#
+# THE TRAP THAT MAKES THIS SCRIPT NECESSARY, NOT JUST CONVENIENT
+# --------------------------------------------------------------
+# iTerm2 holds its entire preferences tree in memory and rewrites the whole
+# plist when it exits. So ANY external change made while iTerm2 is running --
+# by this script, by `defaults write`, by hand -- is silently clobbered the
+# moment you quit. You must:
+#
+#   1. Quit iTerm2 completely (Cmd-Q, not just closing the windows)
+#   2. Run this from Terminal.app
+#   3. Reopen iTerm2
+#
+# The script refuses to run while iTerm2 is up rather than let you lose the
+# work. ITERM_SET_FONT_FORCE=1 overrides that, and you will probably regret it.
+#
+# Related: the script round-trips through `defaults export` / `defaults import`
+# rather than editing ~/Library/Preferences/com.googlecode.iterm2.plist
+# directly. Going through cfprefsd means the preferences daemon can't hand a
+# stale cached copy back to iTerm2 on next launch, which is a separate way to
+# watch your changes evaporate.
+#
+#
+# IF THE GLYPHS ARE STILL BOXES AFTERWARDS: RESTART
+# --------------------------------------------------
+# A freshly installed font is not always visible to everything immediately.
+# macOS keeps a font registration database, and already-running processes hold
+# their own view of it. If iTerm2 shows the right font name in its menu but
+# still draws boxes -- or if a font you just installed doesn't appear at all --
+# a full restart is the cheap fix, and it genuinely does resolve it.
+#
+# Only if a reboot doesn't: `sudo atsutil databases -remove` then log out and
+# back in, which rebuilds the font cache from scratch. Nuclear; rarely needed.
+#
+#
+# WHICH VARIANT, AND WHY "NFM"
+# -----------------------------
+# Default is JetBrainsMonoNFM-Regular. The Nerd Font project ships three widths
+# of every family and the suffix is the whole story:
+#
+#   NF   (JetBrainsMonoNerdFont)      glyphs at their natural width
+#   NFM  (JetBrainsMonoNerdFontMono)  every glyph forced into ONE cell  <-- this
+#   NFP  (JetBrainsMonoNerdFontPropo) proportional
+#
+# A terminal wants NFM. The others let a wide glyph spill into the next cell,
+# which smears the cursor and misaligns anything drawn in columns.
+#
+# Pass a different PostScript name as $1 to use another font. Note that the
+# PostScript name is NOT the filename: the file is
+# JetBrainsMonoNerdFontMono-Regular.ttf but the name you need is
+# JetBrainsMonoNFM-Regular. `iterm-set-font --list` prints what's installed.
+#
+#
+# THE FONT CHECK IS ADVISORY, AND IT HAS LIED BEFORE
+# ---------------------------------------------------
+# The check below confirms the font is really installed, so that a typo doesn't
+# silently give all 13 profiles an invisible fallback. It has produced a false
+# "no installed font reports the PostScript name ..." for a font that was in
+# fact installed. Two known ways that happens, both now defended against:
+#
+#   - `system_profiler ... | grep -q "$FONT"` under `set -o pipefail`: grep -q
+#     exits at the first match, which SIGPIPEs system_profiler (exit 141), and
+#     pipefail reports the whole pipeline as failed. Success looked exactly
+#     like failure. Now the list is captured into a variable first.
+#   - system_profiler returning nothing at all. That means we learned nothing,
+#     which is not the same as "the font is missing". Now reported as such.
+#
+# If you see the warning and the font IS in iTerm's font menu, answer y --
+# the check has never gated correctness, only confidence. Or skip it:
+# ITERM_SET_FONT_SKIP_CHECK=1.
+#
+#
+# WHAT IT TOUCHES
+# ---------------
+# Both "Normal Font" and "Non Ascii Font" on every profile in "New Bookmarks",
+# keeping each profile's existing point size (the Default profile's 12 and
+# graceful.dev's 26 survive). Nothing else in the plist is modified.
+
+set -euo pipefail
+
+if [[ "${1:-}" == "--list" ]]; then
+  system_profiler SPFontsDataType 2>/dev/null \
+    | grep -oE '[A-Za-z]+N(erd)?F(ont)?M?P?[A-Za-z]*-[A-Za-z]+' \
+    | sort -u
+  exit 0
+fi
+
+FONT="${1:-JetBrainsMonoNFM-Regular}"
+DOMAIN="com.googlecode.iterm2"
+
+if pgrep -xq "iTerm2"; then
+  echo "iTerm2 is running. Quit it (Cmd-Q) and run this from Terminal.app," >&2
+  echo "or it will overwrite these changes when it exits." >&2
+  echo >&2
+  echo "To do it anyway (changes will likely be lost):" >&2
+  echo "  ITERM_SET_FONT_FORCE=1 $0 $FONT" >&2
+  [[ "${ITERM_SET_FONT_FORCE:-}" == "1" ]] || exit 1
+fi
+
+echo "Checking installed fonts (system_profiler is slow, ~10-30s)..." >&2
+installed_fonts="$(system_profiler SPFontsDataType 2>/dev/null || true)"
+
+if [[ -z "$installed_fonts" ]]; then
+  echo "Could not read the font list from system_profiler; skipping the check." >&2
+elif ! printf '%s' "$installed_fonts" | grep -q -- "$FONT"; then
+  echo "Warning: no installed font reports the PostScript name '$FONT'." >&2
+  echo "Installed Nerd Font faces:" >&2
+  printf '%s' "$installed_fonts" \
+    | grep -oE '[A-Za-z]+N(erd)?F(ont)?M?P?[A-Za-z]*-[A-Za-z]+' \
+    | sort -u | sed 's/^/  /' >&2 || true
+  echo >&2
+  echo "(This check has been wrong before -- see the header. If the font shows" >&2
+  echo " up in iTerm's font menu, answer y. If it doesn't show up there either," >&2
+  echo " restart the Mac and try again: newly installed fonts sometimes need it." >&2
+  echo " ITERM_SET_FONT_SKIP_CHECK=1 skips this check entirely.)" >&2
+  if [[ "${ITERM_SET_FONT_SKIP_CHECK:-}" == "1" ]]; then
+    echo "Skipping check as requested." >&2
+  else
+    read -rp "Continue anyway? [y/N] " reply
+    [[ "$reply" == [yY] ]] || exit 1
+  fi
+else
+  echo "Found '$FONT'." >&2
+fi
+
+tmp="$(mktemp -t iterm-prefs).plist"
+trap 'rm -f "$tmp"' EXIT
+
+defaults export "$DOMAIN" "$tmp"
+
+FONT="$FONT" python3 - "$tmp" <<'PY'
+import os, plistlib, sys
+
+font = os.environ["FONT"]
+path = sys.argv[1]
+
+with open(path, "rb") as fh:
+    prefs = plistlib.load(fh)
+
+changed = 0
+profiles = prefs.get("New Bookmarks", [])
+for profile in profiles:
+    name = profile.get("Name", "(unnamed)")
+    for key in ("Normal Font", "Non Ascii Font"):
+        current = profile.get(key)
+        if not current:
+            continue
+        # "Monaco 14" -> keep the 14. Sizes can be fractional, and a profile
+        # with a space in the font name still puts the size last.
+        size = current.rsplit(" ", 1)[-1]
+        try:
+            float(size)
+        except ValueError:
+            size = "14"
+        new = f"{font} {size}"
+        if new != current:
+            profile[key] = new
+            changed += 1
+    print(f"  {name:<16} {profile.get('Normal Font')}")
+
+with open(path, "wb") as fh:
+    plistlib.dump(prefs, fh)
+
+print(f"\n{changed} font settings updated across {len(profiles)} profiles.")
+PY
+
+defaults import "$DOMAIN" "$tmp"
+echo
+echo "Imported. Reopen iTerm2 to see it."
+echo "Still seeing boxes? Restart the Mac -- see the header of this script."

@@ -13,21 +13,26 @@ alias k=kubectl
 alias x='chmod +x *(om[1])' # this is interesting here
 
 # not essential
-alias bdl='bd list --sort created -r'
+alias init-seamap='claude plugin install seamapping@tronijess-skills --scope project'
 
 ## prompt
 if [[ "$ITERM_PROFILE" == "graceful.dev" ]]; then
   echo "Grow your programming practice"
   PROMPT='$ '
 else
-  autoload -Uz vcs_info
-  precmd() { vcs_info }
-  zstyle ':vcs_info:git:*' check-for-changes true
-  zstyle ':vcs_info:git:*' formats '%b%c%u '
-  zstyle ':vcs_info:git:*' stagedstr ' 🌞'
-  zstyle ':vcs_info:git:*' unstagedstr ' ⏿'
-  setopt PROMPT_SUBST
-  PROMPT='%F{#10aa20}%*%f %? %F{#EEEEE1}%1~%f %F{#FF2020}%f${vcs_info_msg_0_}$ '
+  # starship prompt (https://starship.rs). Config: ~/.config/starship.toml
+  eval "$(starship init zsh)"
+
+  # -- previous hand-rolled prompt, kept for easy revert: comment out the
+  # -- starship eval above and uncomment this block to go back.
+  # autoload -Uz vcs_info
+  # precmd() { vcs_info }
+  # zstyle ':vcs_info:git:*' check-for-changes true
+  # zstyle ':vcs_info:git:*' formats '%b%c%u '
+  # zstyle ':vcs_info:git:*' stagedstr ' 🌞'
+  # zstyle ':vcs_info:git:*' unstagedstr ' ⏿'
+  # setopt PROMPT_SUBST
+  # PROMPT='%F{#10aa20}%*%f %? %F{#EEEEE1}%1~%f %F{#FF2020}%f${vcs_info_msg_0_}$ '
 fi
 # PROMPT='> '
 
@@ -148,16 +153,24 @@ function get() {
 # change directories, plus title the window
 function be() {
   where=$1
+  original_where=$1
   if [[ -z "$where" ]] ; then
   	echo "Usage: be <some-likely-directory>"
   	echo "This function will look for it in the parent directories listed in ~/.be_dirs"
     return
   fi
   # overrides
-  if [[ $where == "explore" ]] ; then
+  if [[ $where == "episodes" ]]; then
+    where="/Users/jessitron/Library/CloudStorage/ZohoWorkDriveTrueSync-ShipRiseLLC/Episodes"
+  elif [[ $where == "explore" ]] ; then
     where=exploreddd.github.com
+  elif [[ $where == "zoho" ]] ; then 
+    where="/Users/jessitron/Library/CloudStorage/ZohoWorkDriveTrueSync-ShipRiseLLC/"
   elif [[ $where == "ms-demo" ]] ; then
     where=microservices-demo
+  elif [[ $where == "mtg" ]] ; then
+    where=mtg-deck-shuffler
+  elif [[ $where == "life" ]] ; then
   elif [[ $where == "mtg-colors" ]] ; then
     where=mtg-sparrow
   elif [[ $where == "life" ]] ; then
@@ -179,8 +192,11 @@ function be() {
   elif [[ $where == "devrel-demo" ]] ; then
     where=devrel-opentelemetry-demo
     echo "I think you mean, $where"
-  elif [[ $where == "seamap" || $where == "tronijess-skills" ]] ; then
-    where=tracking-skills
+  elif [[ $where == "claude-log" || $where == "convo-story" ]] ; then
+    where=conversation-story
+    echo "I think you mean, $where"
+  elif [[ $where == "seamap" || $where == "tracking-skills" ]] ; then
+    where=tronijess-skills
     echo "I think you mean, $where"
   fi
 
@@ -203,7 +219,7 @@ function be() {
   done
 
   cd $where
-  title $where
+  title $original_where
 
   if [[ -e ".be" ]] ; then 
   	source .be
@@ -217,9 +233,18 @@ function 😱() {
 
 export CLAUDE_CODE_OUTPUT_HONEYCOMB_API_KEY=hcaik_01k1y42mbg8qs650rajqsqybp53w4sxhjdsz84bb3esh92et7nz4c2x60b
 claude() {
+    if [[ -z "$CLAUDE_CONFIG_DIR" ]]; then
+       echo "Is this personal or work? define CLAUDE_CONFIG_DIR"
+       return;
+    fi
+    if [[ "$CLAUDE_CONFIG_DIR" =~ ".claude-work" ]]; then
+       echo " ------------------ Claude for WORK -----------------------"
+    else
+       echo " ----------------------- Claude for PERSONAL -----------------------"
+    fi
     echo "Running claude with telemetry sent to the local claude code collector"
     # the parentheses start a subshell, so that I'm not changing env vars in the current shell
-    (source ~/code/jessitron/claude-collector/claude-env.sh && command claude --permission-mode acceptEdits "$@")
+    (source ~/code/jessitron/claude-collector/claude-env.sh && declare -p CLAUDE_CONFIG_DIR  && command claude --enable-auto-mode "$@")
 }
 
 honeycomb-whoami() {
@@ -290,3 +315,4 @@ export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 
 [[ "$TERM_PROGRAM" == "kiro" ]] && . "$(kiro --locate-shell-integration-path zsh)"
+export PATH="/opt/homebrew/opt/openjdk@21/bin:$PATH"

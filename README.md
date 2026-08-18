@@ -7,6 +7,7 @@ gotta save them somewhere.
 ### Shell configs
 
 - `mac.zshrc` — primary shell config on macOS. Path setup, aliases (`gs`, `ll`, `bp`, `reload`, `k`, `cod`, `awslogin`, `dockerlogin`), a custom prompt with git status, and functions: `gp` (git push with macOS alert on failure), `gc` (commit with `-n`), `get` (clone from GitHub into `~/code/<org>/<repo>` and set the right git email based on org), `be` (cd into a project by short name, looking through `~/.be_dirs` and `~/code/*`), `alert`, `title`, `honeycomb-whoami`, `aws-whoami`, plus a `claude` wrapper that runs Claude Code with OTel telemetry pointed at Honeycomb.
+- `starship.toml` — the [starship](https://starship.rs) prompt config (linked into `~/.config/starship.toml`). Replaced the hand-rolled `vcs_info` prompt in `mac.zshrc` in August 2026; the old prompt is still in there, commented out, one line away from being restored. Keeps the green clock, the red git section and the bare `$`, and adds: 🌞 staged / ⏿ unstaged / 📦 stash-exists / `⇡n` unpushed commits, mid-rebase state, command duration past 2s, decoded exit codes (`✘ SIGINT`) on failure only, and a right-hand prompt of language versions that appear only in a directory that uses them. **Needs a Nerd Font** — see `bin/iterm-set-font`.
 - `mac.bash_profile` — older bash version of the mac config. Mostly historical now that zsh is the default.
 - `windows-wsl-ubuntu.bashrc` — bash config for WSL Ubuntu environments.
 - `aliases.sh` — early/standalone alias file with `be` and `get` in their original bash form.
@@ -26,6 +27,7 @@ gotta save them somewhere.
 - `issue` — open the "new issue" page for the current repo's GitHub remote.
 - `github-diff` — open GitHub's compare view between two refs.
 - `setversion` — bump a snapshot version in `package.json` against a branch tag.
+- `iterm-set-font` — set the font on *every* iTerm2 profile at once (13 of them here), preserving each profile's point size. iTerm2 has no global font setting, and it rewrites its whole plist on quit, so this must be run from Terminal.app with iTerm2 closed — the script refuses otherwise. `--list` shows installed Nerd Font PostScript names. Its header comment is the full story, including why newly installed fonts may need a restart before they render.
 - `aws-transcribe.sh` — automate Amazon Transcribe for a video file (uploads to S3, kicks off the job, downloads the result).
 - `claude-hook`, `claude-approval-hook`, `claude-notification-hook`, `send_otlp_log.sh` — symlinks into `../my-claude-hooks/`. These are the hook scripts referenced by `llm/claude-settings.json`. Clone [`jessitron/my-claude-hooks`](https://github.com/jessitron/my-claude-hooks) alongside this repo for them to resolve.
 
@@ -72,7 +74,21 @@ mkdir ~/.claude (if it doesn't exist)
 ln -s ~/code/jessitron/dotfiles/llm/CLAUDE.md ~/.claude/CLAUDE.md
 ln -s ~/code/jessitron/dotfiles/llm/claude-settings.json ~/.claude/settings.json
 ln -s ~/code/jessitron/dotfiles/llm/skills ~/.claude/skills
+
+# prompt: starship + a Nerd Font for its glyphs
+brew install starship
+brew install --cask font-jetbrains-mono-nerd-font
+mkdir -p ~/.config
+ln -s ~/code/jessitron/dotfiles/starship.toml ~/.config/starship.toml
+ln -s ~/code/jessitron/dotfiles/bin/iterm-set-font ~/.local/bin/iterm-set-font
+# then quit iTerm2 and, from Terminal.app:
+iterm-set-font
+# if glyphs are still boxes after reopening iTerm2, restart the Mac
 ```
+
+Note: `brew install starship` autoremoved `ripgrep` as an "unneeded formula"
+on one machine. Check `which rg` afterwards and `brew install ripgrep` if it
+went missing.
 
 ## Linux / WSL setup
 

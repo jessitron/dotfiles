@@ -1,0 +1,196 @@
+# starship prompt for Jess — https://starship.rs/config/
+#
+# Descended from the hand-rolled zsh prompt in ~/.zshrc (still there, commented
+# out). The bones are the same: green time, the directory, a red git section
+# with the sun, and a bare `$`. Everything else is starship earning its keep.
+#
+# Reload after editing: `reload` (your alias) or just open a new prompt —
+# starship re-reads this file on every render, so no restart needed.
+
+# The left prompt. Backslashes join the lines with no space between modules;
+# each module supplies its own trailing space, so nothing wobbles when one
+# of them has nothing to say and disappears.
+format = """
+$time\
+$directory\
+$git_branch\
+$git_state\
+$git_status\
+$cmd_duration\
+$jobs\
+$status\
+$line_break\
+$character"""
+
+# The right prompt: context you want available but never want to read past.
+# zsh's RPROMPT could do this, but you'd have hand-written every detector.
+# These auto-appear only in a directory that warrants them.
+right_format = """
+$ruby\
+$nodejs\
+$python\
+$golang\
+$rust\
+$java\
+$kubernetes"""
+
+# Blank line above each prompt. Set false to pack the terminal tighter.
+add_newline = true
+
+# ── time ─────────────────────────────────────────────────────────────────
+# Your `%F{#10aa20}%*%f`. %T is HH:MM:SS; use "%R" for HH:MM.
+[time]
+disabled = false
+format = '[$time]($style) '
+time_format = "%T"
+style = "#10aa20"
+
+# ── directory ────────────────────────────────────────────────────────────
+# You had `%1~` — the basename, nothing else. This keeps it that short in a
+# deep tree, but is repo-aware: inside a git repo the path is shown relative
+# to the repo root, and the repo's own name is highlighted. So in
+# code/jessitron/conversation-story/lib/conversation_story you see
+# `conversation-story/lib/conversation_story` with the repo name standing out,
+# instead of a bare `conversation_story` that could be anywhere.
+[directory]
+style = "#EEEEE1"
+repo_root_style = "bold #EEEEE1"
+repo_root_format = '[$before_root_path]($before_repo_root_style)[$repo_root]($repo_root_style)[$path]($style)[$read_only]($read_only_style) '
+truncation_length = 3
+truncate_to_repo = false
+truncation_symbol = "…/"
+read_only = " 🔒"          # a directory you can't write to says so
+read_only_style = "#FF2020"
+
+# ── git ──────────────────────────────────────────────────────────────────
+# The red  is the Nerd Font branch glyph (nf-dev-git_branch). It was already
+# in your old PROMPT but rendered as tofu — Monaco has no such codepoint.
+[git_branch]
+format = '[$symbol$branch]($style)'
+symbol = " "
+style = "#FF2020"
+
+# Your 🌞 and ⏿, plus the states vcs_info never told you about.
+# Order matches $all_status: conflicted, stashed, deleted, renamed, modified,
+# staged, untracked.
+[git_status]
+format = '[$all_status$ahead_behind]($style) '
+style = "#FF2020"
+staged = " 🌞"             # the sun. staged and ready.
+modified = " ⏿"            # unstaged changes
+untracked = " ?"
+deleted = " ✘"
+renamed = " »"
+stashed = " 📦"            # you have a stash here — easy to forget you did
+conflicted = " ⚔"
+ahead = " ⇡${count}"       # commits you haven't pushed
+behind = " ⇣${count}"
+diverged = " ⇡${ahead_count}⇣${behind_count}"
+
+# The module vcs_info could not give you: mid-operation state. When a rebase
+# stops for a conflict, the prompt says REBASING 2/5 instead of leaving you to
+# rediscover it three commands later.
+[git_state]
+format = '\([$state( $progress_current/$progress_total)]($style)\) '
+style = "bold #FFAA00"
+
+# ── feedback on the last command ─────────────────────────────────────────
+# You printed `%?` on every prompt, including the zeros. This prints nothing
+# when a command succeeds and shouts when it doesn't — and it decodes the
+# number: 130 becomes SIGINT, 127 becomes "command not found".
+[status]
+disabled = false
+format = '[$symbol$status]($style) '
+symbol = "✘ "
+style = "bold #FF2020"
+recognize_signal_code = true
+map_symbol = false
+pipestatus = true          # `a | b | c` reports which stage failed
+
+# How long the last command took — but only when it took long enough that you
+# went and looked at something else. Nothing to remember to time.
+[cmd_duration]
+min_time = 2_000
+format = '[took $duration]($style) '
+style = "#FFAA00"
+
+# Background jobs, e.g. a `rake serve &` you forgot about.
+[jobs]
+format = '[$symbol$number]($style) '
+symbol = "⚙ "
+style = "bold #00AACC"
+number_threshold = 1
+
+# ── the prompt character ─────────────────────────────────────────────────
+# Your `$`, now green normally and red when the last command failed — the
+# fastest possible read of "did that work".
+[character]
+success_symbol = '[\$](bold #10aa20)'
+error_symbol = '[\$](bold #FF2020)'
+vimcmd_symbol = '[<](bold #10aa20)'
+
+# ── right prompt: toolchain versions, only where they apply ──────────────
+# Each language gets its emoji. Node is the exception -- there is no Node
+# emoji -- so it uses the Nerd Font hexagon glyph U+E718, which is the
+# actual Node logo. Every symbol here is written by codepoint in the
+# script that generates this file: a private-use glyph pasted through a
+# shell heredoc gets silently stripped to a space, which is how node ended
+# up with no symbol at all the first time round.
+# Each shows only in a directory that actually uses it. The Ruby version
+# respects .tool-versions, which matters given asdf and Ruby 4.
+[ruby]
+format = '[$symbol($version )]($style)'
+symbol = "💎 "
+style = "#FF2020"
+
+[nodejs]
+format = '[$symbol($version )]($style)'
+symbol = " "
+style = "#10aa20"
+
+[python]
+format = '[$symbol($version )(\($virtualenv\) )]($style)'
+symbol = "🐍 "
+style = "#FFAA00"
+
+[golang]
+format = '[$symbol($version )]($style)'
+symbol = "🐹 "
+style = "#00AACC"
+
+[rust]
+format = '[$symbol($version )]($style)'
+symbol = "🦀 "
+style = "#FFAA00"
+
+[java]
+format = '[$symbol($version )]($style)'
+symbol = "☕ "
+style = "#FF2020"
+
+# Kubernetes context. Deliberately quiet: it appears only in a directory that
+# looks like it deploys something, not every time a kubeconfig exists.
+# Delete detect_files/detect_folders to have it always on.
+[kubernetes]
+disabled = false
+format = '[$symbol$context( \($namespace\))]($style) '
+symbol = "☸ "
+style = "#00AACC"
+detect_files = ['Chart.yaml', 'skaffold.yaml', 'kustomization.yaml', 'k8s.yaml']
+detect_folders = ['k8s', 'kubernetes', 'manifests', '.helm']
+
+# AWS profile/region: off. Jess rarely needs it and doesn't want it in the
+# prompt. `aws sts get-caller-identity` (or the shell function in ~/.zshrc)
+# answers the question on the rare occasion it matters.
+[aws]
+disabled = true
+
+# ── available, not enabled ───────────────────────────────────────────────
+# Lines added/removed in the working tree. Genuinely nice, but it shells out
+# to `git diff --shortstat` on every prompt, so it costs you in a big repo.
+# Uncomment to try it — and add $git_metrics to `format` above.
+# [git_metrics]
+# disabled = false
+# format = '([+$added]($added_style) )([-$deleted]($deleted_style) )'
+# added_style = "#10aa20"
+# deleted_style = "#FF2020"
