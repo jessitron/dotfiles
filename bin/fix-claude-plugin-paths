@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+#
+# PURPOSE
+#   Makes Claude Code plugins actually load when $CLAUDE_CONFIG_DIR is set to
+#   something other than ~/.claude.
+#
+# THE BUG (as of Claude Code, 2026-08-18)
+#   The plugin installer WRITES plugin files under $CLAUDE_CONFIG_DIR, but
+#   RECORDS where it put them as a hardcoded ~/.claude/plugins/... path in
+#   known_marketplaces.json and installed_plugins.json. So the files are in the
+#   right place and the bookkeeping points somewhere else. At load time Claude
+#   Code follows the bookkeeping, finds nothing, and the plugin silently never
+#   appears -- no error, the skills just aren't there.
+#
+#   This script rewrites those recorded paths to point where the files really
+#   are, and then reports any recorded path that still doesn't exist.
+#
+# USAGE
+#   fix-claude-plugin-paths
+#
+#   Idempotent -- safe to run any time, does nothing if the files are clean.
+#   Re-run after every `/plugin install`, since a fresh install re-records the
+#   bad paths. Repaired plugins have been observed loading into a session
+#   already in flight; if they don't show up within a few seconds, restart
+#   Claude Code.
+#
+#   Backs up each file it touches to <name>.bak-<timestamp> and validates the
+#   JSON after rewriting.
+#
+# DELETE ME WHEN
+#   Anthropic gets its shit together and honours $CLAUDE_CONFIG_DIR in the
+#   plugin installer. To check: set CLAUDE_CONFIG_DIR, install any plugin, then
+#
+#       grep "$HOME/.claude/plugins" "$CLAUDE_CONFIG_DIR"/plugins/*.json
+#
+#   If that finds nothing, the bug is fixed and this script is dead weight --
+#   delete it. (It already no-ops when CLAUDE_CONFIG_DIR is unset or default.)
+#
+set -euo pipefail
+
+cfg="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
+dir="$cfg/plugins"
+[ -d "$dir" ] || { echo "no plugins dir at $dir" >&2; exit 1; }
+
+if [ "$cfg" = "$HOME/.claude" ]; then
+  echo "CLAUDE_CONFIG_DIR is the default ($cfg); nothing to repair." >&2
+  exit 0
+fi
+
+stamp=$(date +%Y%m%d-%H%M%S)
+changed=0
+
+for f in known_marketplaces.json installed_plugins.json; do
+  src="$dir/$f"
+  [ -f "$src" ] || { echo "skip (absent): $src"; continue; }
+  grep -q "$HOME/\.claude/plugins/" "$src" || { echo "clean: $f"; continue; }
+  cp "$src" "$src.bak-$stamp"
+  sed -i '' "s|$HOME/\.claude/plugins/|$dir/|g" "$src"
+  python3 -c "import json,sys; json.load(open(sys.argv[1]))" "$src"
+  echo "fixed: $f  (backup: $f.bak-$stamp)"
+  changed=1
+done
+
+# Report any recorded path that still does not exist on disk.
+python3 - "$dir" <<'PY'
+import json, os, sys
+d = sys.argv[1]
+for fname, get in (("known_marketplaces.json", lambda j: ((k, [v]) for k, v in j.items())),
+                   ("installed_plugins.json",  lambda j: j["plugins"].items())):
+    p = os.path.join(d, fname)
+    if not os.path.exists(p):
+        continue
+    for name, entries in get(json.load(open(p))):
+        for e in entries:
+            loc = e.get("installLocation") or e.get("installPath")
+            if loc and not os.path.isdir(loc):
+                print(f"  still missing: {name} -> {loc}")
+PY
+
+[ "$changed" = 1 ] && echo "Repaired. Plugins should load shortly; restart Claude Code if they do not."
+exit 0
