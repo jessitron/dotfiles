@@ -2,7 +2,20 @@
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   },
-  "model": "opus[1m]",
+  "permissions": {
+    "allow": [
+      "mcp__claude_ai_Notion__notion-search",
+      "mcp__claude_ai_Slack__slack_search_public_and_private",
+      "mcp__claude_ai_Notion__notion-fetch",
+      "mcp__claude_ai_Linear__get_*",
+      "mcp__claude_ai_Linear__list_*",
+      "mcp__claude_ai_Linear__search_*",
+      "mcp__claude_ai_Linear__extract_*",
+      "Read(//Users/jessitron/code/jessitron/tronijess-skills/plugins/seamapping/**)",
+      "Read(~/.claude/plugins/cache/tronijess-skills/seamapping/**)"
+    ]
+  },
+  "model": "claude-fable-5[1m]",
   "hooks": {
     "Notification": [
       {
@@ -113,7 +126,7 @@
   },
   "enabledPlugins": {
     "honeycomb@honeycomb-plugins": true,
-    "gopls-lsp@claude-plugins-official": true
+    "gopls-lsp@claude-plugins-official": false
   },
   "extraKnownMarketplaces": {
     "honeycomb-plugins": {
@@ -127,11 +140,19 @@
         "source": "github",
         "repo": "simple10/agents-observe"
       }
+    },
+    "tracking-skills": {
+      "source": {
+        "source": "directory",
+        "path": "/Users/jessitron/code/jessitron/tracking-skills"
+      }
     }
   },
   "alwaysThinkingEnabled": true,
   "effortLevel": "medium",
+  "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
+  "theme": "dark-daltonized",
   "disabledMcpServers": [
     "claude.ai Slack",
     "claude.ai Asana",
@@ -141,6 +162,5 @@
   ],
   "preferences": {
     "tmuxSplitPanes": true
-  },
-  "theme": "dark-daltonized"
+  }
 }

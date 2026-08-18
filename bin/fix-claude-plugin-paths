@@ -20,9 +20,8 @@
 #
 #   Idempotent -- safe to run any time, does nothing if the files are clean.
 #   Re-run after every `/plugin install`, since a fresh install re-records the
-#   bad paths. Repaired plugins have been observed loading into a session
-#   already in flight; if they don't show up within a few seconds, restart
-#   Claude Code.
+#   bad paths. Then RESTART Claude Code: the skill list is built at session
+#   start, so a repaired plugin won't show up in a session already running.
 #
 #   Backs up each file it touches to <name>.bak-<timestamp> and validates the
 #   JSON after rewriting.
@@ -77,5 +76,5 @@ for fname, get in (("known_marketplaces.json", lambda j: ((k, [v]) for k, v in j
                 print(f"  still missing: {name} -> {loc}")
 PY
 
-[ "$changed" = 1 ] && echo "Repaired. Plugins should load shortly; restart Claude Code if they do not."
+[ "$changed" = 1 ] && echo "Restart Claude Code to load the repaired plugins."
 exit 0
