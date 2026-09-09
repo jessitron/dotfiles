@@ -7,14 +7,22 @@
 # Reload after editing: `reload` (your alias) or just open a new prompt —
 # starship re-reads this file on every render, so no restart needed.
 
-# The left prompt. Backslashes join the lines with no space between modules;
-# each module supplies its own trailing space, so nothing wobbles when one
-# of them has nothing to say and disappears.
+# The left prompt. Backslashes join the lines with no gap between modules.
+# Between the rainbow-block modules (time/directory/git_branch/git_status)
+# sits a literal arrow glyph (U+E0B0) styled fg:<block behind it>
+# bg:<block ahead of it> — that's what turns two adjacent colors into a
+# triangle pointing from one into the next, powerline-style. Every module's
+# own padding lives INSIDE its styled brackets (never a bare space outside
+# one) — a stray unstyled space there reintroduces the gap this is fixing.
 format = """
 $time\
+[](fg:#1d2021 bg:#FFAA00)\
 $directory\
+[](fg:#FFAA00 bg:#10aa20)\
 $git_branch\
+[](fg:#10aa20 bg:#00AACC)\
 $git_status\
+[](fg:#00AACC)\
 $git_state\
 $cmd_duration\
 $jobs\
@@ -54,13 +62,15 @@ style = "bg:#1d2021 fg:#10aa20"
 # code/jessitron/conversation-story/lib/conversation_story you see
 # `conversation-story/lib/conversation_story` with the repo name standing out,
 # instead of a bare `conversation_story` that could be anywhere.
-# Now a solid block (bg:#FFAA00, the first color in the rainbow chain),
-# butted directly against time's block before it and git_branch's after —
-# no separator glyph, just the backgrounds touching.
+# Now a solid block (bg:#FFAA00, the first color in the rainbow chain).
+# All padding is INSIDE the styled brackets below — an outer unstyled
+# space here (the old repo_root_format had one on each end) shows up as
+# a visible gap next to the arrow glyphs in $format.
 [directory]
 style = "bg:#FFAA00 fg:#1d2021"
 repo_root_style = "bold bg:#FFAA00 fg:#1d2021"
-repo_root_format = ' [$before_root_path]($before_repo_root_style)[$repo_root]($repo_root_style)[$path]($style)[$read_only]($read_only_style) '
+format = '[ $path ]($style)[$read_only]($read_only_style)'
+repo_root_format = '[ $before_root_path]($before_repo_root_style)[$repo_root]($repo_root_style)[$path ]($style)[$read_only]($read_only_style)'
 truncation_length = 3
 truncate_to_repo = false
 truncation_symbol = "…/"
