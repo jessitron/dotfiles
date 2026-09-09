@@ -12,13 +12,9 @@
 # of them has nothing to say and disappears.
 format = """
 $time\
-[](fg:#FFAA00)\
 $directory\
-[](fg:#FFAA00 bg:#10aa20)\
 $git_branch\
-[](fg:#10aa20 bg:#00AACC)\
 $git_status\
-[](fg:#00AACC)\
 $git_state\
 $cmd_duration\
 $jobs\
@@ -43,11 +39,13 @@ add_newline = true
 
 # ── time ─────────────────────────────────────────────────────────────────
 # Your `%F{#10aa20}%*%f`. %T is HH:MM:SS; use "%R" for HH:MM.
+# First block in the rainbow chain now too — a dark bg so the green stays
+# readable, butted directly against directory's orange block with no gap.
 [time]
 disabled = false
-format = '[$time]($style) '
+format = '[ $time ]($style)'
 time_format = "%T"
-style = "#10aa20"
+style = "bg:#1d2021 fg:#10aa20"
 
 # ── directory ────────────────────────────────────────────────────────────
 # You had `%1~` — the basename, nothing else. This keeps it that short in a
@@ -56,9 +54,9 @@ style = "#10aa20"
 # code/jessitron/conversation-story/lib/conversation_story you see
 # `conversation-story/lib/conversation_story` with the repo name standing out,
 # instead of a bare `conversation_story` that could be anywhere.
-# Now a solid block (bg:#FFAA00, the first color in the rainbow chain) —
-# the arrows in the top-level $format are hardcoded to this exact color, so
-# if you change it here, update both `[](fg:#FFAA00)` lines above too.
+# Now a solid block (bg:#FFAA00, the first color in the rainbow chain),
+# butted directly against time's block before it and git_branch's after —
+# no separator glyph, just the backgrounds touching.
 [directory]
 style = "bg:#FFAA00 fg:#1d2021"
 repo_root_style = "bold bg:#FFAA00 fg:#1d2021"
@@ -72,20 +70,19 @@ read_only_style = "bg:#FFAA00 fg:#FF2020"
 # ── git ──────────────────────────────────────────────────────────────────
 # The red  is the Nerd Font branch glyph (nf-dev-git_branch). It was already
 # in your old PROMPT but rendered as tofu — Monaco has no such codepoint.
-# Second block in the rainbow chain (bg:#10aa20) — same rule as directory:
-# the arrows in $format hardcode this color on both sides.
+# Second block in the rainbow chain (bg:#10aa20), touching directory's
+# block on one side and git_status's on the other.
 [git_branch]
-format = '[$symbol$branch ]($style)'
+format = '[ $symbol$branch ]($style)'
 symbol = " "
 style = "bg:#10aa20 fg:#1d2021"
 
 # Your 🌞 and ⏿, plus the states vcs_info never told you about.
 # Order matches $all_status: conflicted, stashed, deleted, renamed, modified,
 # staged, untracked.
-# Third block in the rainbow chain (bg:#00AACC) — same rule as the others:
-# the arrows in $format hardcode this color on both sides.
+# Third (last) block in the rainbow chain (bg:#00AACC).
 [git_status]
-format = '[$all_status$ahead_behind ]($style)'
+format = '[ $all_status$ahead_behind ]($style)'
 style = "bg:#00AACC fg:#1d2021"
 staged = " 🌞"             # the sun. staged and ready.
 modified = " ⏿"            # unstaged changes
