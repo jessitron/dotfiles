@@ -12,10 +12,14 @@
 # of them has nothing to say and disappears.
 format = """
 $time\
+[](fg:#FFAA00)\
 $directory\
+[](fg:#FFAA00 bg:#10aa20)\
 $git_branch\
-$git_state\
+[](fg:#10aa20 bg:#00AACC)\
 $git_status\
+[](fg:#00AACC)\
+$git_state\
 $cmd_duration\
 $jobs\
 $status\
@@ -52,30 +56,37 @@ style = "#10aa20"
 # code/jessitron/conversation-story/lib/conversation_story you see
 # `conversation-story/lib/conversation_story` with the repo name standing out,
 # instead of a bare `conversation_story` that could be anywhere.
+# Now a solid block (bg:#FFAA00, the first color in the rainbow chain) —
+# the arrows in the top-level $format are hardcoded to this exact color, so
+# if you change it here, update both `[](fg:#FFAA00)` lines above too.
 [directory]
-style = "#EEEEE1"
-repo_root_style = "bold #EEEEE1"
-repo_root_format = '[$before_root_path]($before_repo_root_style)[$repo_root]($repo_root_style)[$path]($style)[$read_only]($read_only_style) '
+style = "bg:#FFAA00 fg:#1d2021"
+repo_root_style = "bold bg:#FFAA00 fg:#1d2021"
+repo_root_format = ' [$before_root_path]($before_repo_root_style)[$repo_root]($repo_root_style)[$path]($style)[$read_only]($read_only_style) '
 truncation_length = 3
 truncate_to_repo = false
 truncation_symbol = "…/"
 read_only = " 🔒"          # a directory you can't write to says so
-read_only_style = "#FF2020"
+read_only_style = "bg:#FFAA00 fg:#FF2020"
 
 # ── git ──────────────────────────────────────────────────────────────────
 # The red  is the Nerd Font branch glyph (nf-dev-git_branch). It was already
 # in your old PROMPT but rendered as tofu — Monaco has no such codepoint.
+# Second block in the rainbow chain (bg:#10aa20) — same rule as directory:
+# the arrows in $format hardcode this color on both sides.
 [git_branch]
-format = '[$symbol$branch]($style)'
+format = '[$symbol$branch ]($style)'
 symbol = " "
-style = "#FF2020"
+style = "bg:#10aa20 fg:#1d2021"
 
 # Your 🌞 and ⏿, plus the states vcs_info never told you about.
 # Order matches $all_status: conflicted, stashed, deleted, renamed, modified,
 # staged, untracked.
+# Third block in the rainbow chain (bg:#00AACC) — same rule as the others:
+# the arrows in $format hardcode this color on both sides.
 [git_status]
-format = '[$all_status$ahead_behind]($style) '
-style = "#FF2020"
+format = '[$all_status$ahead_behind ]($style)'
+style = "bg:#00AACC fg:#1d2021"
 staged = " 🌞"             # the sun. staged and ready.
 modified = " ⏿"            # unstaged changes
 untracked = " ?"
