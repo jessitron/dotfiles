@@ -50,9 +50,6 @@ export GPG_TTY=$(tty)
 
 # # Honeycomb
 # eval "$(direnv hook zsh)"
-# . "$HOME/.asdf/asdf.sh"
-# # append completions to fpath
-# fpath=(${ASDF_DIR}/completions $fpath)
 # # initialise completions with ZSH's compinit
 # autoload -Uz compinit && compinit
 
@@ -162,6 +159,8 @@ function be() {
   # overrides
   if [[ $where == "episodes" ]]; then
     where="/Users/jessitron/Library/CloudStorage/ZohoWorkDriveTrueSync-ShipRiseLLC/Episodes"
+  elif [[ $where == "battleships" ]] ; then
+    where="$HOME/code/battleships-hq"
   elif [[ $where == "explore" ]] ; then
     where=exploreddd.github.com
   elif [[ $where == "zoho" ]] ; then 
@@ -234,8 +233,14 @@ function 😱() {
 export CLAUDE_CODE_OUTPUT_HONEYCOMB_API_KEY=hcaik_01k1y42mbg8qs650rajqsqybp53w4sxhjdsz84bb3esh92et7nz4c2x60b
 claude() {
     if [[ -z "$CLAUDE_CONFIG_DIR" ]]; then
-       echo "Is this personal or work? define CLAUDE_CONFIG_DIR"
-       return;
+       if [[ "$CLAUDE_USE" =~ "work" ]]; then
+          export CLAUDE_CONFIG_DIR="$HOME/.claude-work"
+       elif [[ "$CLAUDE_USE" =~ "personal" ]]; then
+          export CLAUDE_CONFIG_DIR="$HOME/.claude-personal"
+       else 
+           echo "Is this personal or work? define CLAUDE_USE=work|personal"
+           return;
+       fi
     fi
     if [[ "$CLAUDE_CONFIG_DIR" =~ ".claude-work" ]]; then
        echo " ------------------ Claude for WORK -----------------------"
@@ -305,7 +310,7 @@ aws-whoami() {
 
 alias claude-mcp="claude mcp add honeycomb --transport http https://mcp.honeycomb.io/mcp"
 
-export PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"
+eval "$(mise activate zsh)"
 
 # bun completions
 [ -s "/Users/jessitron/.bun/_bun" ] && source "/Users/jessitron/.bun/_bun"

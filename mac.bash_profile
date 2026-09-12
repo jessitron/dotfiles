@@ -20,7 +20,7 @@ alias dockerlogin='aws ecr get-login-password --region $(aws configure get regio
 
 # hound (Honeycomb)
 eval "$(direnv hook bash)"
-. $HOME/.asdf/asdf.sh
+eval "$(mise activate bash)"
 
 export GOPRIVATE=github.com/honeycomb.io
 export PATH=$PATH:$GOPATH/bin

@@ -1,0 +1,19 @@
+#!/bin/sh
+# Never let mise leave us without a node toolchain.
+#
+# Sits AHEAD of ~/.local/share/mise/shims on PATH; `node`, `npm`, `npx` are symlinks here.
+#  - Inside a Claude Code plugin hook (CLAUDE_PLUGIN_ROOT is set): go straight to
+#    the fixed Homebrew node. Hook scripts don't care what the repo pins, and
+#    this path cannot fail no matter what the cwd looks like.
+#  - Otherwise: honour the repo's mise pin, falling back to the fixed toolchain
+#    only when mise cannot resolve one (version not installed, no version set).
+cmd=$(basename "$0")
+FALLBACK="/opt/homebrew/bin/$cmd"
+
+if [ -z "$CLAUDE_PLUGIN_ROOT" ]; then
+  real=$(mise which "$cmd" 2>/dev/null)
+  [ -n "$real" ] && [ -x "$real" ] && exec "$real" "$@"
+fi
+
+[ -x "$FALLBACK" ] || { echo "node-fallback: no $cmd at $FALLBACK" >&2; exit 127; }
+exec "$FALLBACK" "$@"
