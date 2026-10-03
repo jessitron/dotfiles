@@ -162,5 +162,10 @@
   ],
   "preferences": {
     "tmuxSplitPanes": true
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "~/code/jessitron/dotfiles/bin/claude-statusline",
+    "padding": 0
   }
 }

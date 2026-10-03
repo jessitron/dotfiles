@@ -1,0 +1,64 @@
+#!/bin/zsh
+# Claude Code status line (settings.json "statusLine"). Claude Code pipes a
+# JSON blob about the session to stdin after each assistant message; whatever
+# this prints becomes the footer. Schema: https://code.claude.com/docs/en/statusline
+#
+# Shows, as powerline blocks in the same colors as the starship prompt:
+#   model │ directory │ context used: 86k/200k 43%
+# The context block goes green → orange (≥50%) → red (≥80%), so you can see
+# a compaction coming.
+#
+# Glyphs are written by codepoint (\ue0b0), never pasted — see CLAUDE.md.
+#
+# Try it by hand:
+#   echo '{"model":{"display_name":"Opus"},"workspace":{"current_dir":"/tmp"},"context_window":{"context_window_size":200000,"used_percentage":43,"current_usage":{"input_tokens":1000,"cache_creation_input_tokens":5000,"cache_read_input_tokens":80000}}}' | claude-statusline
+
+input=$(cat)
+
+field() { jq -r "$1 // empty" <<<"$input" }
+
+model=$(field '.model.display_name')
+dir=$(field '.workspace.current_dir')
+dir=${dir:t}   # basename, like the prompt's %1~
+size=$(field '.context_window.context_window_size')
+pct=$(field '.context_window.used_percentage')
+pct_int=${pct%.*}   # may be fractional or null
+used=$(field '.context_window.current_usage | (.input_tokens + .cache_creation_input_tokens + .cache_read_input_tokens)')
+
+# 86123 -> 86k
+k() { (( $1 >= 1000 )) && echo "$(( $1 / 1000 ))k" || echo "$1" }
+
+if [[ -n "$used" && -n "$size" ]]; then
+  ctx="$(k $used)/$(k $size) ${pct_int:-0}%"
+else
+  ctx="ctx —"   # null before the first API call and right after /compact
+fi
+
+# Colors as "r;g;b" for 24-bit ANSI. Same palette as starship.toml.tmpl.
+dark="29;32;33"      # #1d2021
+orange="255;170;0"   # #FFAA00
+green="16;170;32"    # #10aa20
+cyan="0;170;204"     # #00AACC
+red="255;32;32"      # #FF2020
+
+ctx_bg=$green
+(( ${pct_int:-0} >= 50 )) && ctx_bg=$orange
+(( ${pct_int:-0} >= 80 )) && ctx_bg=$red
+
+arrow=$'\ue0b0'
+reset=$'\e[0m'
+
+# block <bg> <fg> <text> <next-bg or empty>
+block() {
+  printf '\e[48;2;%sm\e[38;2;%sm %s ' "$1" "$2" "$3"
+  if [[ -n "$4" ]]; then
+    printf '\e[48;2;%sm\e[38;2;%sm%s' "$4" "$1" "$arrow"
+  else
+    printf '%s\e[38;2;%sm%s%s' "$reset" "$1" "$arrow" "$reset"
+  fi
+}
+
+block "$cyan"   "$dark"   "${model:-claude}" "$dark"
+block "$dark"   "$orange" "${dir:-?}"        "$ctx_bg"
+block "$ctx_bg" "$dark"   "$ctx"             ""
+echo
