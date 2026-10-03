@@ -1,21 +1,32 @@
 #!/bin/zsh
 # Renders starship.toml.tmpl into a real config, swapping in the 7 rainbow-
-# chain colors from env vars (falling back to the defaults baked into
-# starship.toml). Prints the path to the rendered file on stdout — caller
-# sets STARSHIP_CONFIG to it, e.g. from a .be file:
+# chain colors from env vars (falling back to the defaults below). Prints the
+# path to the rendered file on stdout — caller sets STARSHIP_CONFIG to it,
+# e.g. from a .be file:
 #
 #   export STARSHIP_TIME_BG="#1d2021"
 #   export STARSHIP_DIR_BG="#5f5fd7"
 #   export STARSHIP_CONFIG="$(~/code/jessitron/dotfiles/bin/starship-colors)"
 #
-# Vars not set keep their default (the current starship.toml colors), so a
-# .be file only needs to set the ones it's overriding.
+# Vars not set keep their default, so a .be file only needs to set the ones
+# it's overriding.
+#
+#   starship-colors --write-default
+#
+# regenerates dotfiles/starship.toml (the default config, what
+# ~/.config/starship.toml links to) from the template, ignoring any override
+# vars. Run it after every edit to starship.toml.tmpl.
 
 set -euo pipefail
 
-TEMPLATE="$HOME/code/jessitron/dotfiles/starship.toml.tmpl"
+DOTFILES="$HOME/code/jessitron/dotfiles"
+TEMPLATE="$DOTFILES/starship.toml.tmpl"
 CACHE_DIR="${TMPDIR:-/tmp}/starship-colors"
-mkdir -p "$CACHE_DIR"
+
+if [[ "${1:-}" == "--write-default" ]]; then
+  unset STARSHIP_TIME_BG STARSHIP_DIR_BG STARSHIP_DIR_FG \
+        STARSHIP_BRANCH_BG STARSHIP_BRANCH_FG STARSHIP_STATUS_BG STARSHIP_STATUS_FG
+fi
 
 : "${STARSHIP_TIME_BG:=#1d2021}"
 : "${STARSHIP_DIR_BG:=#FFAA00}"
@@ -25,11 +36,7 @@ mkdir -p "$CACHE_DIR"
 : "${STARSHIP_STATUS_BG:=#00AACC}"
 : "${STARSHIP_STATUS_FG:=#1d2021}"
 
-key="$STARSHIP_TIME_BG|$STARSHIP_DIR_BG|$STARSHIP_DIR_FG|$STARSHIP_BRANCH_BG|$STARSHIP_BRANCH_FG|$STARSHIP_STATUS_BG|$STARSHIP_STATUS_FG"
-hash=$(echo "$key" | md5)
-out="$CACHE_DIR/$hash.toml"
-
-if [[ ! -e "$out" ]]; then
+render() {
   sed \
     -e "s|@@TIME_BG@@|$STARSHIP_TIME_BG|g" \
     -e "s|@@DIR_BG@@|$STARSHIP_DIR_BG|g" \
@@ -38,7 +45,32 @@ if [[ ! -e "$out" ]]; then
     -e "s|@@BRANCH_FG@@|$STARSHIP_BRANCH_FG|g" \
     -e "s|@@STATUS_BG@@|$STARSHIP_STATUS_BG|g" \
     -e "s|@@STATUS_FG@@|$STARSHIP_STATUS_FG|g" \
-    "$TEMPLATE" > "$out"
+    "$TEMPLATE"
+}
+
+if [[ "${1:-}" == "--write-default" ]]; then
+  # Drop the template's own header (everything above the "starship prompt
+  # for Jess" line) and stamp a do-not-edit banner in its place.
+  {
+    echo "# GENERATED from starship.toml.tmpl by \`starship-colors --write-default\`."
+    echo "# Don't edit this file — edit the template and regenerate."
+    echo "#"
+    render | sed -n '/^# starship prompt for Jess/,$p'
+  } > "$DOTFILES/starship.toml"
+  echo "$DOTFILES/starship.toml"
+  exit 0
+fi
+
+mkdir -p "$CACHE_DIR"
+
+# The template's content is part of the key, so editing the template
+# invalidates every cached render instead of serving stale ones.
+key="$(md5 -q "$TEMPLATE")|$STARSHIP_TIME_BG|$STARSHIP_DIR_BG|$STARSHIP_DIR_FG|$STARSHIP_BRANCH_BG|$STARSHIP_BRANCH_FG|$STARSHIP_STATUS_BG|$STARSHIP_STATUS_FG"
+hash=$(echo "$key" | md5)
+out="$CACHE_DIR/$hash.toml"
+
+if [[ ! -e "$out" ]]; then
+  render > "$out"
 fi
 
 echo "$out"

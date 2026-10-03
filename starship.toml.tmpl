@@ -1,20 +1,25 @@
-# Template for starship.toml — the source of truth for the rainbow-chain
-# colors (time/directory/git_branch/git_status). Edit THIS file for any
-# structural change, then run `starship-colors` (bin/starship-colors) with
-# no overrides to regenerate the default starship.toml from it.
+# Template for starship.toml — the source of truth for the whole prompt
+# config. Edit THIS file, then run `starship-colors --write-default` to
+# regenerate the default starship.toml (which is never hand-edited).
 #
 # Placeholders (7): @@TIME_BG@@, @@DIR_BG@@, @@DIR_FG@@, @@BRANCH_BG@@,
-# @@BRANCH_FG@@, @@STATUS_BG@@, @@STATUS_FG@@ — everything else here is
-# identical to starship.toml.
+# @@BRANCH_FG@@, @@STATUS_BG@@, @@STATUS_FG@@ — the rainbow-chain colors.
+# Defaults live in bin/starship-colors; a project's .be can override any of
+# them per shell (see that script's header).
+#
+# Everything from the next line down is copied into starship.toml.
 #
 # starship prompt for Jess — https://starship.rs/config/
 #
 # Descended from the hand-rolled zsh prompt in ~/.zshrc (still there, commented
-# out). The bones are the same: green time, the directory, a red git section
-# with the sun, and a bare `$`. Everything else is starship earning its keep.
+# out). The bones are the same: green time, the directory, a git section
+# with the sun, and a bare `$` — now dressed as a chain of powerline color
+# blocks. Everything else is starship earning its keep.
 #
-# Reload after editing: `reload` (your alias) or just open a new prompt —
-# starship re-reads this file on every render, so no restart needed.
+# After editing the template, run `starship-colors --write-default`, then just
+# press enter — starship re-reads its config on every render, so no restart
+# or `reload` needed. (Shells with a .be color override pick up the change
+# the next time they run `starship-colors`, e.g. on `be`.)
 
 # The left prompt. Backslashes join the lines with no gap between modules.
 # Between the rainbow-block modules (time/directory/git_branch/git_status)
@@ -71,7 +76,7 @@ style = "bg:@@TIME_BG@@ fg:#10aa20"
 # code/jessitron/conversation-story/lib/conversation_story you see
 # `conversation-story/lib/conversation_story` with the repo name standing out,
 # instead of a bare `conversation_story` that could be anywhere.
-# Now a solid block (bg:#FFAA00, the first color in the rainbow chain).
+# Second block in the rainbow chain (default bg:#FFAA00), after time.
 # All padding is INSIDE the styled brackets below — an outer unstyled
 # space here (the old repo_root_format had one on each end) shows up as
 # a visible gap next to the arrow glyphs in $format.
@@ -87,9 +92,9 @@ read_only = " 🔒"          # a directory you can't write to says so
 read_only_style = "bg:@@DIR_BG@@ fg:#FF2020"
 
 # ── git ──────────────────────────────────────────────────────────────────
-# The red  is the Nerd Font branch glyph (nf-dev-git_branch). It was already
+# The symbol is U+E0A0, the powerline branch glyph (nf-pl-branch). It was already
 # in your old PROMPT but rendered as tofu — Monaco has no such codepoint.
-# Second block in the rainbow chain (bg:#10aa20), touching directory's
+# Third block in the rainbow chain (default bg:#10aa20), touching directory's
 # block on one side and git_status's on the other.
 [git_branch]
 format = '[ $symbol$branch ]($style)'
@@ -99,7 +104,7 @@ style = "bg:@@BRANCH_BG@@ fg:@@BRANCH_FG@@"
 # Your 🌞 and ⏿, plus the states vcs_info never told you about.
 # Order matches $all_status: conflicted, stashed, deleted, renamed, modified,
 # staged, untracked.
-# Third (last) block in the rainbow chain (bg:#00AACC).
+# Fourth (last) block in the rainbow chain (default bg:#00AACC).
 [git_status]
 format = '[ $all_status$ahead_behind ]($style)'
 style = "bg:@@STATUS_BG@@ fg:@@STATUS_FG@@"
@@ -159,12 +164,13 @@ vimcmd_symbol = '[<](bold #10aa20)'
 # ── right prompt: toolchain versions, only where they apply ──────────────
 # Each language gets its emoji. Node is the exception -- there is no Node
 # emoji -- so it uses the Nerd Font hexagon glyph U+E718, which is the
-# actual Node logo. Every symbol here is written by codepoint in the
-# script that generates this file: a private-use glyph pasted through a
-# shell heredoc gets silently stripped to a space, which is how node ended
-# up with no symbol at all the first time round.
-# Each shows only in a directory that actually uses it. The Ruby version
-# respects .tool-versions, which matters given asdf and Ruby 4.
+# actual Node logo. Edit glyphs like that one in a real editor, never by
+# pasting through a shell heredoc: a private-use glyph pasted that way gets
+# silently stripped to a space, which is how node ended up with no symbol
+# at all the first time round.
+# Each shows only in a directory that actually uses it. The versions come
+# from running the tool itself, so they follow mise (and .tool-versions /
+# mise.toml) — which matters given Ruby 4.
 [ruby]
 format = '[$symbol($version )]($style)'
 symbol = "💎 "
