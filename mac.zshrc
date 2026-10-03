@@ -1,4 +1,4 @@
-# we are here
+# / we are here ... what happened to this line
 echo "Good morning."
 
 # path
@@ -7,7 +7,7 @@ PATH="/usr/local/bin:$HOME/.local/bin:/Users/jessitron/.cargo/bin:/opt/homebrew/
 # essentials
 alias gs='git status'
 alias ll='ls -la'
-alias bp='vi ~/.zshrc'
+alias bp='vi ~/.zshrc; reload'
 alias reload='source ~/.zshrc'
 alias k=kubectl
 alias x='chmod +x *(om[1])' # this is interesting here
@@ -93,7 +93,7 @@ function gp() {
 
 function gc() {
     message=${1:-"commit dangit"}
-    git commit -n -m "$message"
+    git commit -n -m "🙂 $message"
 }
 
 
@@ -192,7 +192,7 @@ function be() {
     where=devrel-opentelemetry-demo
     echo "I think you mean, $where"
   elif [[ $where == "claude-log" || $where == "convo-story" ]] ; then
-    where=conversation-story
+    where=conversation-explorer
     echo "I think you mean, $where"
   elif [[ $where == "seamap" || $where == "tracking-skills" ]] ; then
     where=tronijess-skills
@@ -321,3 +321,6 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 
 [[ "$TERM_PROGRAM" == "kiro" ]] && . "$(kiro --locate-shell-integration-path zsh)"
 export PATH="/opt/homebrew/opt/openjdk@21/bin:$PATH"
+
+# yx completion
+source /Users/jessitron/.zsh/completions/yx
