@@ -4,7 +4,9 @@
 # this prints becomes the footer. Schema: https://code.claude.com/docs/en/statusline
 #
 # Shows, as powerline blocks in the same colors as the starship prompt:
-#   model │ directory │ context used: 86k/200k 43%
+#   account │ model │ directory │ context used: 86k/200k 43%
+# The account block comes from $CLAUDE_CONFIG_DIR (.claude-work vs
+# .claude-personal), so you can tell which login you're in at a glance.
 # The context block goes green → orange (≥50%) → red (≥80%), so you can see
 # a compaction coming.
 #
@@ -40,6 +42,14 @@ orange="255;170;0"   # #FFAA00
 green="16;170;32"    # #10aa20
 cyan="0;170;204"     # #00AACC
 red="255;32;32"      # #FF2020
+purple="170;110;230" # personal account
+
+# Which login is this? Claude Code runs us with its own CLAUDE_CONFIG_DIR.
+case "${CLAUDE_CONFIG_DIR:-$HOME/.claude}" in
+  *claude-work*)     acct="jessitrobbee";  acct_bg=$orange ;;
+  *claude-personal*) acct="jessitron yo";  acct_bg=$purple ;;
+  *)                 acct="${${CLAUDE_CONFIG_DIR:-$HOME/.claude}:t}"; acct_bg=$red ;;
+esac
 
 ctx_bg=$green
 (( ${pct_int:-0} >= 50 )) && ctx_bg=$orange
@@ -58,6 +68,7 @@ block() {
   fi
 }
 
+block "$acct_bg" "$dark"  "$acct"            "$cyan"
 block "$cyan"   "$dark"   "${model:-claude}" "$dark"
 block "$dark"   "$orange" "${dir:-?}"        "$ctx_bg"
 block "$ctx_bg" "$dark"   "$ctx"             ""
