@@ -4,10 +4,10 @@
 # this prints becomes the footer. Schema: https://code.claude.com/docs/en/statusline
 #
 # Shows, as powerline blocks in the same colors as the starship prompt:
-#   account │ model │ directory │ context used: 86k/200k 43%
+#   account │ model │ directory │ context used: 86k
 # The account block comes from $CLAUDE_CONFIG_DIR (.claude-work vs
 # .claude-personal), so you can tell which login you're in at a glance.
-# The context block goes green → orange (≥50%) → red (≥80%), so you can see
+# The context block shows only tokens used; its color goes green → orange (≥50%) → red (≥80%), so you can see
 # a compaction coming.
 #
 # Glyphs are written by codepoint (\ue0b0), never pasted — see CLAUDE.md.
@@ -31,7 +31,7 @@ used=$(field '.context_window.current_usage | (.input_tokens + .cache_creation_i
 k() { (( $1 >= 1000 )) && echo "$(( $1 / 1000 ))k" || echo "$1" }
 
 if [[ -n "$used" && -n "$size" ]]; then
-  ctx="$(k $used)/$(k $size) ${pct_int:-0}%"
+  ctx="$(k $used)"
 else
   ctx="ctx —"   # null before the first API call and right after /compact
 fi
