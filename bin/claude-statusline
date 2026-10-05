@@ -46,7 +46,7 @@ purple="170;110;230" # personal account
 
 # Which login is this? Claude Code runs us with its own CLAUDE_CONFIG_DIR.
 case "${CLAUDE_CONFIG_DIR:-$HOME/.claude}" in
-  *claude-work*)     acct="jessitrobbee";  acct_bg=$orange ;;
+  *claude-work*)     acct="jessitronbee";  acct_bg=$orange ;;
   *claude-personal*) acct="jessitron yo";  acct_bg=$purple ;;
   *)                 acct="${${CLAUDE_CONFIG_DIR:-$HOME/.claude}:t}"; acct_bg=$red ;;
 esac
