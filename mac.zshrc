@@ -157,7 +157,9 @@ function be() {
     return
   fi
   # overrides
-  if [[ $where == "episodes" ]]; then
+  if [[ $where == "." ]]; then
+     where=$(pwd)
+  elif [[ $where == "episodes" ]]; then
     where="/Users/jessitron/Library/CloudStorage/ZohoWorkDriveTrueSync-ShipRiseLLC/Episodes"
   elif [[ $where == "battleships" ]] ; then
     where="$HOME/code/battleships-hq"
@@ -177,7 +179,7 @@ function be() {
   elif [[ $where == "otel-demo" ]] ; then
     where=opentelemetry-demo
   elif [[ $where == "tronijess" ]] ; then
-    where=project-tronijess
+    where=tronijess-skills
     echo "I think you mean, $where"
   elif [[ $where == "cyndibot" ]] ; then
     where=cynditaylor-com-bot
@@ -237,9 +239,19 @@ claude() {
           export CLAUDE_CONFIG_DIR="$HOME/.claude-work"
        elif [[ "$CLAUDE_USE" =~ "personal" ]]; then
           export CLAUDE_CONFIG_DIR="$HOME/.claude-personal"
-       else 
-           echo "Is this personal or work? define CLAUDE_USE=work|personal"
-           return;
+       else
+           local answer
+           read -r "answer?Is this personal or work? [w/p, anything else cancels] "
+           case "$answer" in
+             w|work)     export CLAUDE_USE=work
+                         export CLAUDE_CONFIG_DIR="$HOME/.claude-work" ;;
+             p|personal) export CLAUDE_USE=personal
+                         export CLAUDE_CONFIG_DIR="$HOME/.claude-personal" ;;
+             *) return ;;
+           esac
+           # remember it for next time, in this directory's .be (sourced by `be`)
+           echo "export CLAUDE_USE=$CLAUDE_USE" >> .be
+           echo "Appended CLAUDE_USE=$CLAUDE_USE to $(pwd)/.be"
        fi
     fi
     if [[ "$CLAUDE_CONFIG_DIR" =~ ".claude-work" ]]; then
