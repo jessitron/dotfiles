@@ -1,171 +1,34 @@
 {
-  "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
-  },
-  "permissions": {
-    "allow": [
-      "mcp__claude_ai_Notion__notion-search",
-      "mcp__claude_ai_Slack__slack_search_public_and_private",
-      "mcp__claude_ai_Notion__notion-fetch",
-      "mcp__claude_ai_Linear__get_*",
-      "mcp__claude_ai_Linear__list_*",
-      "mcp__claude_ai_Linear__search_*",
-      "mcp__claude_ai_Linear__extract_*",
-      "Read(//Users/jessitron/code/jessitron/tronijess-skills/plugins/seamapping/**)",
-      "Read(~/.claude/plugins/cache/tronijess-skills/seamapping/**)"
-    ]
-  },
-  "model": "claude-fable-5[1m]",
-  "hooks": {
-    "Notification": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/bin/claude-notification-hook"
-          },
-          {
-            "type": "command",
-            "command": "~/bin/claude-hook"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/bin/claude-hook"
-          }
-        ]
-      }
-    ],
-    "PreCompact": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/bin/claude-hook"
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/bin/claude-hook"
-          },
-          {
-            "type": "command",
-            "command": "~/bin/claude-approval-hook"
-          }
-        ]
-      }
-    ],
-    "SessionEnd": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/bin/claude-hook"
-          }
-        ]
-      }
-    ],
-    "SessionStart": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/bin/claude-hook"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/bin/claude-hook"
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/bin/claude-hook"
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/bin/claude-hook"
-          }
-        ]
-      }
-    ]
-  },
-  "enabledPlugins": {
-    "honeycomb@honeycomb-plugins": true,
-    "gopls-lsp@claude-plugins-official": false
-  },
-  "extraKnownMarketplaces": {
-    "honeycomb-plugins": {
-      "source": {
-        "source": "github",
-        "repo": "honeycombio/agent-skill"
-      }
-    },
-    "agents-observe": {
-      "source": {
-        "source": "github",
-        "repo": "simple10/agents-observe"
-      }
-    },
-    "tracking-skills": {
-      "source": {
-        "source": "directory",
-        "path": "/Users/jessitron/code/jessitron/tracking-skills"
-      }
-    }
-  },
-  "alwaysThinkingEnabled": true,
-  "effortLevel": "medium",
-  "tui": "fullscreen",
-  "skipDangerousModePermissionPrompt": true,
-  "theme": "dark-daltonized",
-  "disabledMcpServers": [
-    "claude.ai Slack",
-    "claude.ai Asana",
-    "claude.ai Honeycomb",
-    "claude.ai Honeycomb Dogfood",
-    "claude.ai Context7"
-  ],
-  "preferences": {
-    "tmuxSplitPanes": true
-  },
+  "model": "opus",
+  "disableArtifact": true,
   "statusLine": {
     "type": "command",
     "command": "~/code/jessitron/dotfiles/bin/claude-statusline",
     "padding": 0
+  },
+  "enabledPlugins": {
+    "iterate-on-docs@iterate-on-docs": true
+  },
+  "extraKnownMarketplaces": {
+    "tronijess-skills": {
+      "source": {
+        "source": "directory",
+        "path": "/Users/jessitron/code/jessitron/tronijess-skills"
+      }
+    },
+    "iterate-on-docs": {
+      "source": {
+        "source": "directory",
+        "path": "/Users/jessitron/code/jessitron/iterate-on-docs"
+      }
+    }
+  },
+  "effortLevel": "medium",
+  "theme": "dark",
+  "autoMode": {
+    "hard_deny": [
+      "$defaults",
+      "Any command that recursively scans, searches, or walks filesystem root. These trigger macOS permission popups for every third-party app's folder (Dropbox, etc.)."
+    ]
   }
 }

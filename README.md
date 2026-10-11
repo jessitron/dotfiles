@@ -31,12 +31,13 @@ gotta save them somewhere.
 - `starship-colors` — renders `starship.toml.tmpl` with the 7 rainbow-chain colors taken from `STARSHIP_*_BG/FG` env vars (unset ones keep their defaults) and prints the path of the result, cached in `$TMPDIR/starship-colors/`. For a per-project prompt color, put `export STARSHIP_DIR_BG="#5f5fd7"` and `export STARSHIP_CONFIG="$(~/code/jessitron/dotfiles/bin/starship-colors)"` in that project's `.be`. Note the override sticks to the shell after you leave the project. `--write-default` regenerates `starship.toml` instead.
 - `claude-statusline` — Claude Code's footer (`statusLine` in settings.json). Reads the session JSON on stdin and prints powerline blocks matching the prompt: account │ model │ directory │ context used (just tokens, e.g. `86k`); the account block (orange "jessitronbee" for `.claude-work`, purple "jessitron yo" for `.claude-personal`, red + dir name if unrecognized) comes from `$CLAUDE_CONFIG_DIR`. The context block's color (not its text) goes green → orange at 50% → red at 80%. Not starship — Claude Code runs this itself. Its header has a one-liner to test it by hand. Each config dir (`~/.claude-work`, `~/.claude-personal`) has its own `settings.json`, and each needs the `statusLine` entry pointing here.
 - `aws-transcribe.sh` — automate Amazon Transcribe for a video file (uploads to S3, kicks off the job, downloads the result).
-- `claude-hook`, `claude-approval-hook`, `claude-notification-hook`, `send_otlp_log.sh` — symlinks into `../my-claude-hooks/`. These are the hook scripts referenced by `llm/claude-settings.json`. Clone [`jessitron/my-claude-hooks`](https://github.com/jessitron/my-claude-hooks) alongside this repo for them to resolve.
+- `claude-hook`, `claude-approval-hook`, `claude-notification-hook`, `send_otlp_log.sh` — symlinks into `../my-claude-hooks/`. These are Claude Code hook scripts; no account's settings wire them up right now (the hooks were lost when `~/.claude` split into two account dirs). Clone [`jessitron/my-claude-hooks`](https://github.com/jessitron/my-claude-hooks) alongside this repo for them to resolve.
 
 ### `llm/` — Claude Code config
 
 - `claude-work.CLAUDE.md`, `claude-personal.CLAUDE.md` — the global instructions for each Claude account, symlinked to `~/.claude-work/CLAUDE.md` and `~/.claude-personal/CLAUDE.md`. They're separate files on purpose: they've drifted apart (🐝 vs 🥕 prefix, different commit tags, etc.) and nobody has synced them yet. Edit either one through the symlink or here; it's the same file.
-- `claude-settings.json` — global Claude Code settings (linked into `~/.claude/settings.json`). Sets the model, wires up hooks for every event (`PreToolUse`, `PostToolUse`, `Notification`, `SessionStart`, `SessionEnd`, `Stop`, etc.) to the scripts in `bin/`, enables the Honeycomb and gopls plugins, and disables some MCP servers. NOTE: those scripts in bin/ live in jessitron/my-claude-hooks
+- `claude-personal.settings.json` — the personal account's Claude Code settings, symlinked to `~/.claude-personal/settings.json`. Model, statusline, local plugin marketplaces (`tronijess-skills`, `iterate-on-docs`), and a generic auto-mode `hard_deny`. This repo is public: keep project-specific auto-mode rules and environment notes in that project's `.claude/settings.local.json`, not here. The work account's `settings.json` is not tracked.
+- `skills/` — personal Claude Code skills (`honeycomb-events-api`, `honeycomb-whoami`). Each one is symlinked individually into each account's `skills/` dir; the directory as a whole is not linked, because the account dirs also hold app-synced skills.
 - `instructions-for-augment.txt` — equivalent rules for the Augment AI assistant.
 
 ### `windows/` — PowerShell setup
@@ -67,11 +68,16 @@ source one-time-git-setup.sh
 get my-claude-hooks jessitron # some of the important files are here, why
 ln -s ~/code/jessitron/dotfiles/bin ~/bin
 
-ln -s ~/code/jessitron/dotfiles/llm/claude-settings.json ~/.claude/settings.json
-
-# per-account Claude instructions
+# per-account Claude config (never create ~/.claude; use CLAUDE_CONFIG_DIR)
 ln -s ~/code/jessitron/dotfiles/llm/claude-work.CLAUDE.md ~/.claude-work/CLAUDE.md
 ln -s ~/code/jessitron/dotfiles/llm/claude-personal.CLAUDE.md ~/.claude-personal/CLAUDE.md
+ln -s ~/code/jessitron/dotfiles/llm/claude-personal.settings.json ~/.claude-personal/settings.json
+for acct in work personal; do
+  mkdir -p ~/.claude-$acct/skills
+  for s in ~/code/jessitron/dotfiles/llm/skills/*/; do
+    ln -s "${s%/}" ~/.claude-$acct/skills/
+  done
+done
 
 # prompt: starship + a Nerd Font for its glyphs
 brew install starship
