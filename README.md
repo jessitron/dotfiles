@@ -36,7 +36,6 @@ gotta save them somewhere.
 ### `llm/` — Claude Code config
 
 - `claude-work.CLAUDE.md`, `claude-personal.CLAUDE.md` — the global instructions for each Claude account, symlinked to `~/.claude-work/CLAUDE.md` and `~/.claude-personal/CLAUDE.md`. They're separate files on purpose: they've drifted apart (🐝 vs 🥕 prefix, different commit tags, etc.) and nobody has synced them yet. Edit either one through the symlink or here; it's the same file.
-- `CLAUDE.md` — older global instructions from back when there was one `~/.claude` dir (linked into `~/.claude/CLAUDE.md`). Personality, working style, `RESPONSE_PREFIX` system, "end session" notes convention, commit style ("- claude" tag).
 - `claude-settings.json` — global Claude Code settings (linked into `~/.claude/settings.json`). Sets the model, wires up hooks for every event (`PreToolUse`, `PostToolUse`, `Notification`, `SessionStart`, `SessionEnd`, `Stop`, etc.) to the scripts in `bin/`, enables the Honeycomb and gopls plugins, and disables some MCP servers. NOTE: those scripts in bin/ live in jessitron/my-claude-hooks
 - `skills/` — personal Claude Code skills, symlinked into `~/.claude/skills/` so they're available in every project. Each skill is a directory with a `SKILL.md` describing when to invoke it. To wire it up:
   ```
@@ -74,7 +73,6 @@ get my-claude-hooks jessitron # some of the important files are here, why
 ln -s ~/code/jessitron/dotfiles/bin ~/bin
 
 mkdir ~/.claude (if it doesn't exist)
-ln -s ~/code/jessitron/dotfiles/llm/CLAUDE.md ~/.claude/CLAUDE.md
 ln -s ~/code/jessitron/dotfiles/llm/claude-settings.json ~/.claude/settings.json
 ln -s ~/code/jessitron/dotfiles/llm/skills ~/.claude/skills
 
