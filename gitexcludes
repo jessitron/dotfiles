@@ -4,3 +4,4 @@ carrot
 *.swp
 .tool-versions
 **/.claude/settings.local.json
+**/.claude/worktrees/
