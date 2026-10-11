@@ -25,6 +25,9 @@
   },
   "effortLevel": "medium",
   "theme": "dark",
+  "worktree": {
+    "baseRef": "head"
+  },
   "autoMode": {
     "hard_deny": [
       "$defaults",
