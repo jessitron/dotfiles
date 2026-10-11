@@ -31,7 +31,6 @@ gotta save them somewhere.
 - `starship-colors` — renders `starship.toml.tmpl` with the 7 rainbow-chain colors taken from `STARSHIP_*_BG/FG` env vars (unset ones keep their defaults) and prints the path of the result, cached in `$TMPDIR/starship-colors/`. For a per-project prompt color, put `export STARSHIP_DIR_BG="#5f5fd7"` and `export STARSHIP_CONFIG="$(~/code/jessitron/dotfiles/bin/starship-colors)"` in that project's `.be`. Note the override sticks to the shell after you leave the project. `--write-default` regenerates `starship.toml` instead.
 - `claude-statusline` — Claude Code's footer (`statusLine` in settings.json). Reads the session JSON on stdin and prints powerline blocks matching the prompt: account │ model │ directory │ context used (just tokens, e.g. `86k`); the account block (orange "jessitronbee" for `.claude-work`, purple "jessitron yo" for `.claude-personal`, red + dir name if unrecognized) comes from `$CLAUDE_CONFIG_DIR`. The context block's color (not its text) goes green → orange at 50% → red at 80%. Not starship — Claude Code runs this itself. Its header has a one-liner to test it by hand. Each config dir (`~/.claude-work`, `~/.claude-personal`) has its own `settings.json`, and each needs the `statusLine` entry pointing here.
 - `aws-transcribe.sh` — automate Amazon Transcribe for a video file (uploads to S3, kicks off the job, downloads the result).
-- `claude-hook`, `claude-approval-hook`, `claude-notification-hook`, `send_otlp_log.sh` — symlinks into `../my-claude-hooks/`. These are Claude Code hook scripts; no account's settings wire them up right now (the hooks were lost when `~/.claude` split into two account dirs). Clone [`jessitron/my-claude-hooks`](https://github.com/jessitron/my-claude-hooks) alongside this repo for them to resolve.
 
 ### `llm/` — Claude Code config
 
@@ -65,7 +64,6 @@ git clone https://github.com/jessitron/dotfiles
 ln -s ~/code/jessitron/dotfiles/mac.zshrc ~/.zshrc
 source one-time-git-setup.sh
 
-get my-claude-hooks jessitron # some of the important files are here, why
 ln -s ~/code/jessitron/dotfiles/bin ~/bin
 
 # per-account Claude config (never create ~/.claude; use CLAUDE_CONFIG_DIR)

@@ -1,1 +1,0 @@
-/Users/jessitron/code/jessitron/my-claude-hooks/send_otlp_log.sh
