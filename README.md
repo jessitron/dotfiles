@@ -30,6 +30,7 @@ gotta save them somewhere.
 - `iterm-set-font` — set the font on *every* iTerm2 profile at once (13 of them here), preserving each profile's point size. iTerm2 has no global font setting, and it rewrites its whole plist on quit, so this must be run from Terminal.app with iTerm2 closed — the script refuses otherwise. `--list` shows installed Nerd Font PostScript names. Its header comment is the full story, including why newly installed fonts may need a restart before they render.
 - `starship-colors` — renders `starship.toml.tmpl` with the 7 rainbow-chain colors taken from `STARSHIP_*_BG/FG` env vars (unset ones keep their defaults) and prints the path of the result, cached in `$TMPDIR/starship-colors/`. For a per-project prompt color, put `export STARSHIP_DIR_BG="#5f5fd7"` and `export STARSHIP_CONFIG="$(~/code/jessitron/dotfiles/bin/starship-colors)"` in that project's `.be`. Note the override sticks to the shell after you leave the project. `--write-default` regenerates `starship.toml` instead.
 - `claude-statusline` — Claude Code's footer (`statusLine` in settings.json). Reads the session JSON on stdin and prints powerline blocks matching the prompt: account │ model │ directory │ context used (just tokens, e.g. `86k`); the account block (orange "jessitronbee" for `.claude-work`, purple "jessitron yo" for `.claude-personal`, red + dir name if unrecognized) comes from `$CLAUDE_CONFIG_DIR`. The context block's color (not its text) goes green → orange at 50% → red at 80%. Not starship — Claude Code runs this itself. Its header has a one-liner to test it by hand. Each config dir (`~/.claude-work`, `~/.claude-personal`) has its own `settings.json`, and each needs the `statusLine` entry pointing here.
+- `with-be <command>` — run a command with the environment from `.be` at the current repo's root; in a worktree, which has no `.be`, the main checkout's. For agents, whose shells don't load `.be` and may be forbidden to `source` it.
 - `aws-transcribe.sh` — automate Amazon Transcribe for a video file (uploads to S3, kicks off the job, downloads the result).
 - `fix-claude-plugin-paths` — works around a Claude Code bug where plugins installed under a non-default `$CLAUDE_CONFIG_DIR` get recorded with hardcoded `~/.claude/plugins/...` paths and silently never load. Rewrites the recorded paths. Header comment has the full story.
 - `node-fallback/` — `node`/`npm`/`npx` wrappers that sit ahead of mise shims on PATH: use the repo's mise pin when it resolves, otherwise (and always inside Claude Code plugin hooks) fall back to Homebrew's node.
@@ -68,6 +69,7 @@ ln -s ~/code/jessitron/dotfiles/mac.zshrc ~/.zshrc
 source one-time-git-setup.sh
 
 ln -s ~/code/jessitron/dotfiles/bin ~/bin
+ln -s ~/code/jessitron/dotfiles/bin/with-be ~/.local/bin/with-be
 
 # per-account Claude config (never create ~/.claude; use CLAUDE_CONFIG_DIR)
 ln -s ~/code/jessitron/dotfiles/llm/claude-work.CLAUDE.md ~/.claude-work/CLAUDE.md
