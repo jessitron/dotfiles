@@ -23,6 +23,11 @@
       }
     }
   },
+  "permissions": {
+    "allow": [
+      "Bash(source .be)"
+    ]
+  },
   "effortLevel": "medium",
   "theme": "dark",
   "worktree": {
