@@ -32,4 +32,8 @@ Here are some things to know about me:
 - If I'm going to screw something up, warn me! We are partners here.
 - although don't call me partner, that's weird. Jess is fine. she/her
 
+## Environment: `.be`
+
+A repo's environment, API keys above all, lives in `.be` at its root, as `export NAME=value` lines. `.be` is in my global git excludes, so it never gets committed; don't add it to a `.gitignore`. Never print its values. To run a command with it, use `with-be <command>` (on PATH, from my dotfiles `bin/`): it sources `.be` and runs the command. It works from a worktree, which has no `.be` of its own, by reading the main checkout's, and it passes the worktree guard that refuses `source .be`.
+
 
