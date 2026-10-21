@@ -4,9 +4,12 @@
 # this prints becomes the footer. Schema: https://code.claude.com/docs/en/statusline
 #
 # Shows, as powerline blocks in the same colors as the starship prompt:
-#   account │ model │ directory │ context used: 86k
+#   account │ model │ repo │ context used: 86k
 # The account block comes from $CLAUDE_CONFIG_DIR (.claude-work vs
 # .claude-personal), so you can tell which login you're in at a glance.
+# The repo block is the name of the git repo containing the current directory;
+# inside a worktree it is still the main checkout's name. Outside git it falls
+# back to the directory's basename.
 # The context block shows only tokens used; its color goes green → orange (≥50%) → red (≥80%), so you can see
 # a compaction coming.
 #
@@ -21,7 +24,14 @@ field() { jq -r "$1 // empty" <<<"$input" }
 
 model=$(field '.model.display_name')
 dir=$(field '.workspace.current_dir')
-dir=${dir:t}   # basename, like the prompt's %1~
+# Repo name: the main checkout's directory, even from inside a worktree
+# (--git-common-dir is the shared .git, whose parent is the main checkout).
+gitdir=$(git -C "${dir:-.}" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)
+if [[ -n "$gitdir" ]]; then
+  repo=${${gitdir:h}:t}
+else
+  repo=${dir:t}   # not in git: basename, like the prompt's %1~
+fi
 size=$(field '.context_window.context_window_size')
 pct=$(field '.context_window.used_percentage')
 pct_int=${pct%.*}   # may be fractional or null
@@ -70,6 +80,6 @@ block() {
 
 block "$acct_bg" "$dark"  "$acct"            "$cyan"
 block "$cyan"   "$dark"   "${model:-claude}" "$dark"
-block "$dark"   "$orange" "${dir:-?}"        "$ctx_bg"
+block "$dark"   "$orange" "${repo:-?}"       "$ctx_bg"
 block "$ctx_bg" "$dark"   "$ctx"             ""
 echo
