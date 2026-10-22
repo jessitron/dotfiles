@@ -239,14 +239,18 @@ claude() {
           export CLAUDE_CONFIG_DIR="$HOME/.claude-work"
        elif [[ "$CLAUDE_USE" =~ "personal" ]]; then
           export CLAUDE_CONFIG_DIR="$HOME/.claude-personal"
+       elif [[ "$CLAUDE_USE" =~ "other" ]]; then
+          export CLAUDE_CONFIG_DIR="$HOME/.claude-anonymous"
        else
            local answer
-           read -r "answer?Is this personal or work? [w/p, anything else cancels] "
+           read -r "answer?Is this personal, work, or other (API key, none of my config)? [w/p/o, anything else cancels] "
            case "$answer" in
              w|work)     export CLAUDE_USE=work
                          export CLAUDE_CONFIG_DIR="$HOME/.claude-work" ;;
              p|personal) export CLAUDE_USE=personal
                          export CLAUDE_CONFIG_DIR="$HOME/.claude-personal" ;;
+             o|other)    export CLAUDE_USE=other
+                         export CLAUDE_CONFIG_DIR="$HOME/.claude-anonymous" ;;
              *) return ;;
            esac
            # remember it for next time, in this directory's .be (sourced by `be`)
@@ -256,6 +260,14 @@ claude() {
     fi
     if [[ "$CLAUDE_CONFIG_DIR" =~ ".claude-work" ]]; then
        echo " ------------------ Claude for WORK -----------------------"
+    elif [[ "$CLAUDE_CONFIG_DIR" =~ ".claude-anonymous" ]]; then
+       # not logged in: auth comes from ANTHROPIC_API_KEY, usually in the repo's .be
+       if [[ -z "$ANTHROPIC_API_KEY" ]]; then
+          echo "CLAUDE_USE=other needs ANTHROPIC_API_KEY; put it in this repo's .be" >&2
+          return 1
+       fi
+       mkdir -p "$CLAUDE_CONFIG_DIR"
+       echo " ------------------ Claude for OTHER (API key, no config) ------------------"
     else
        echo " ----------------------- Claude for PERSONAL -----------------------"
     fi

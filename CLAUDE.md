@@ -27,6 +27,9 @@ See README.md for what each file is.
 
 ## Claude account config (llm/)
 
+- A third config dir, `~/.claude-anonymous` (`CLAUDE_USE=other`), is
+  deliberately empty: API-key auth, none of my config. Don't symlink anything
+  into it.
 - Never create `~/.claude`; it is a guard file. Everything is per-account
   (`~/.claude-work`, `~/.claude-personal`) via `$CLAUDE_CONFIG_DIR`.
 - Tracked here, symlinked into the account dirs: both `CLAUDE.md`s, the
