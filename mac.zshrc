@@ -336,3 +336,18 @@ export PATH="/opt/homebrew/opt/openjdk@21/bin:$PATH"
 
 # yx completion
 source /Users/jessitron/.zsh/completions/yx
+
+# herdr: a new pane opens in its workspace's directory, so load that repo's .be.
+# Like with-be, a worktree (no .be of its own) falls back to the main checkout's.
+function load_be() {
+  local root be
+  root=$(git rev-parse --show-toplevel 2>/dev/null) || root=$PWD
+  be="$root/.be"
+  if [[ ! -f $be ]] && git rev-parse --git-dir >/dev/null 2>&1; then
+    be="$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.be"
+  fi
+  [[ -f $be ]] || return 0
+  set -a; source "$be"; set +a
+  echo "loaded $be"
+}
+[[ -n "$HERDR_ENV" ]] && load_be
