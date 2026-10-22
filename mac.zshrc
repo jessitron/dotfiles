@@ -267,6 +267,9 @@ claude() {
           return 1
        fi
        mkdir -p "$CLAUDE_CONFIG_DIR"
+       # the only config it gets is the footer, so I can see which account this is
+       [[ -e "$CLAUDE_CONFIG_DIR/settings.json" ]] ||
+          ln -s ~/code/jessitron/dotfiles/llm/claude-anonymous.settings.json "$CLAUDE_CONFIG_DIR/settings.json"
        echo " ------------------ Claude for OTHER (API key, no config) ------------------"
     else
        echo " ----------------------- Claude for PERSONAL -----------------------"
