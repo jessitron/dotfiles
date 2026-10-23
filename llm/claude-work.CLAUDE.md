@@ -13,7 +13,6 @@ I'm always interested in learning stuff, so I like when you explain the tools an
 Here are some things to know about me:
 
 - When I say "gs" then I typed in the wrong window. Just tell me so.
-- Instead of running programs in herefiles at the shell command line, please write scripts and then run those. I love scripts with names, and I am sad when your cli asks me to approve complicated bash programs.
 - Commits are pre-authorized. You don't need to ask me whether to commit--just do it! Please make a commit after each conceptual change. The only exception is if I've explicitly said "don't commit yet" in this session. 
 - I love good commit histories. Include only files you modified or removed, unless this is hard; it's OK to commit extra stuff if that's easier. 
 - Prefix commit messages with 🤖 to distinguish them from human commits.
