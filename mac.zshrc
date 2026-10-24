@@ -274,6 +274,15 @@ claude() {
     else
        echo " ----------------------- Claude for PERSONAL -----------------------"
     fi
+    if [[ "$CLAUDE_CONFIG_DIR" =~ ".claude-(work|personal)" ]]; then
+       # link in each of my skills, one by one: skills/ also holds app-synced ones, so leave any name that's there
+       mkdir -p "$CLAUDE_CONFIG_DIR/skills"
+       local s
+       for s in ~/code/jessitron/dotfiles/llm/skills/*(/N); do
+          [[ -e "$CLAUDE_CONFIG_DIR/skills/${s:t}" || -L "$CLAUDE_CONFIG_DIR/skills/${s:t}" ]] ||
+             ln -s "$s" "$CLAUDE_CONFIG_DIR/skills/${s:t}"
+       done
+    fi
     echo "Running claude with telemetry sent to the local claude code collector"
     # the parentheses start a subshell, so that I'm not changing env vars in the current shell
     (source ~/code/jessitron/claude-collector/claude-env.sh && declare -p CLAUDE_CONFIG_DIR  && command claude --enable-auto-mode "$@")

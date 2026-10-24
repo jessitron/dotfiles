@@ -35,7 +35,8 @@ See README.md for what each file is.
   (`~/.claude-work`, `~/.claude-personal`) via `$CLAUDE_CONFIG_DIR`.
 - Tracked here, symlinked into the account dirs: both `CLAUDE.md`s, the
   personal `settings.json`, and each skill in `llm/skills/` individually.
-  Don't symlink the whole `skills/` dir — the account dirs hold app-synced
-  skills too.
+  The `claude` wrapper links each skill on launch, so a new skill needs only
+  its directory here. Don't symlink the whole `skills/` dir — the account
+  dirs hold app-synced skills too.
 - This repo is public. Project-specific auto-mode rules/environment notes go
   in that project's gitignored `.claude/settings.local.json`, not here.
