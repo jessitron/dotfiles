@@ -231,8 +231,6 @@ function 😱() {
   echo "Yeah, I feel that way too."
 }
 
-
-export CLAUDE_CODE_OUTPUT_HONEYCOMB_API_KEY=hcaik_01k1y42mbg8qs650rajqsqybp53w4sxhjdsz84bb3esh92et7nz4c2x60b
 claude() {
     if [[ -z "$CLAUDE_CONFIG_DIR" ]]; then
        if [[ "$CLAUDE_USE" =~ "work" ]]; then
