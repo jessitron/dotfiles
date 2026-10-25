@@ -32,30 +32,38 @@ Launch every agent that writes with `isolation: "worktree"`. Its worktree branch
 
 1. **Pick (Shepherd).** It reads the repo's CLAUDE.md and task tracker (`yx list --ready`) and picks 3 to 6 yaks agents can finish without Jess. Leave out human jobs (👩🏽‍🦱), anything that pushes, deploys, or releases, and design questions Jess hasn't decided, unless a documented guess covers it. It groups picks into waves with disjoint files, and checks `git worktree list` and wip yaks for another session's live work, so the run avoids those files. It reports: yak IDs, one-line task, files, starting guesses, wave, size. It also lists runners-up and what it rejected, with reasons.
 2. **Scaffold (Herald, or Shepherd from round 2).** It builds the directory, as above. You merge it to main before launching any yak agent, because the agents read their pages from main.
-3. **Run the waves.** Launch a wave's agents in parallel, each with the prompt below. When one reports merged-ready: in its worktree, `git rebase main`, run the full suite, fast-forward main (`git -C <main> merge --ff-only <branch>`), then `chmod -R u+w <worktree>` (yx makes files read-only), `git worktree remove`, and `git branch -d`. Then fill its page's diff link (below). Launch the next wave when every branch it depends on is merged.
+3. **Run the waves.** Launch a wave's agents in parallel, each with the prompt below. When one reports merged-ready, merge it (below), then `chmod -R u+w <worktree>` (yx makes files read-only) and `git worktree remove` it. Keep the branch. Then fill its page's diff link (below). Launch the next wave when every branch it depends on is merged.
 4. **Close the round (Tally).** Then push-notify Jess: one line saying what landed, the test count, and where to read.
 5. **Another round** when Jess asks, or when she said to keep going.
 
 ## Merging
 
-- Only you merge, and only to main. Rebase, then fast-forward, so history stays linear. Never make merge commits, and never push.
-- Main moves under you: other sessions commit there. If the fast-forward fails, rebase again. Re-run the suite after any rebase that took in code.
-- On a rebase conflict, send the agent back (SendMessage) to resolve it in its worktree, rerun the suite, and report. Don't resolve it yourself.
-- Two branches can each pass and still break together: an import move plus another change can make a cycle. That's why the suite runs after the rebase.
+Each agent's work lands on main as one merge commit, so its commits stay a visible lump. This overrides Jess's usual linear-history rule: in away mode she wants merge commits.
+
+1. In the agent's worktree, `git merge main`, which brings main in. Run the full suite there.
+2. Merge the branch into main with `git -C <main> merge --no-ff <branch> -m "Merge <agent>: <one-line summary> - claude"`. Its first parent is the main before, so the merge commit's diff is exactly the agent's work.
+3. Push main (`git -C <main> push`). Jess allows pushing main in away mode, and the push makes the diff link resolve. Don't push anything else, and never `yx sync`, deploy, or release.
+4. Rename the branch to `away/<agent>` (`git branch -m`), and keep it until Jess deletes `away/`.
+
+Details:
+
+- Only you merge, and only to main. Agents never merge or push.
+- No rebasing, so the agent's commit hashes stay valid, and the hashes on its page stay right.
+- Main moves under you: other sessions commit there. If main moved between steps 1 and 2, repeat step 1.
+- On a conflict in step 1, abort it and send the agent back (SendMessage) to merge main in its worktree, resolve, rerun the suite, and report. Don't resolve it yourself.
+- Two branches can each pass and still break together: an import move plus another change can make a cycle. That's why the suite runs after main comes in.
 - Leave alone any uncommitted change in the main checkout that isn't yours, and tell Jess about it.
+- Pushing main publishes whatever GitHub Pages serves, `away/` included. In the index, flag what went public: any change to a published page.
 
 ## The diff link
 
-Each agent page has a `diff` section holding a link to its changes on GitHub. Only you can write it: a rebase changes the hashes, so the agent's own hashes go stale. After the fast-forward:
+Each agent page has a `diff` section holding a link to its changes on GitHub. Only you can write it, because the merge commit doesn't exist until you make it. After the merge:
 
-- `before` is main's hash before the merge, and `after` is its hash after.
-- The URL is `https://github.com/<owner>/<repo>/compare/<before>...<after>`, built from `git remote get-url origin`.
-- Replace the `<!-- coordinator: diff -->` marker in the agent's page with the link, and commit it on main as its own small commit.
+- The URL is `https://github.com/<owner>/<repo>/compare/<merge>^1...<merge>`, with both hashes spelled out in full, and the owner and repo taken from `git remote get-url origin`.
+- Replace the `<!-- coordinator: diff -->` marker in the agent's page with the link. Commit it on main, and push with the next merge.
 - When you fill the index's status cell, link the same URL.
 
-A ten-commit run makes ten small diff commits. If that's too noisy, batch them: fill every merged agent's link at once, before launching the next wave.
-
-The links resolve only after Jess pushes main. The index says so.
+Messy history is fine. If the diff-link commits pile up, batch them: fill every merged agent's link at once, before launching the next wave.
 
 ## Usage limits
 
@@ -83,7 +91,7 @@ Fill in the brackets. Keep each prompt self-contained: the agent starts cold.
 
 - **Jess's word beats a pick.** If a yak's history holds a decision of hers ("keep them for now"), narrow the agent's task to fit it, and say so in the notes.
 - **Guesses are findable.** Every guess is a Guess / Why / If wrong block with a fixed `guess-` id. Tally links every one from the round's "Read first" list. A design decision an agent makes for Jess goes in the repo's decision record and also on the page as a guess.
-- **Public pages get flagged.** Any change to a page GitHub Pages publishes goes on the "decide before push" list.
+- **Public pages get flagged.** Pushing main publishes, so the index lists every change to a page GitHub Pages serves, and Jess can review what went out.
 - **Browser checks become human yaks.** Agents can't share one Chrome, and nobody is there to reconnect it.
 - **Gotchas feed back.** Each page lists what tripped its agent. Tally adds what a future agent needs to the repo's CLAUDE.md.
 - **Side effects are reported.** Every final report lists what the agent changed outside its worktree, so a revert is possible.

@@ -21,7 +21,7 @@ Each section is a `<section>` with this id and class, in this order. To change a
 
    The id starts `guess-` and stays fixed once written, so links to it hold. Replace "None yet." with the first block.
 5. `result`: commits (short hash and subject), the tests you ran with their pass counts, and what changed for a user.
-6. `diff`: holds only `<!-- coordinator: diff -->`. Leave it alone. After your merge, the coordinator replaces it with a link to your changes on GitHub, since your hashes change when it rebases.
+6. `diff`: holds only `<!-- coordinator: diff -->`. Leave it alone. After your merge, the coordinator replaces it with a link to your merge on GitHub, since the merge commit doesn't exist until then.
 7. `gotchas`: things that tripped you, one `<li>` each, as candidates for CLAUDE.md fixes. Say what would have saved the time.
 8. `new-yaks`: each yak you added, as `<li><code>full-yak-id</code>: name</li>`.
 
