@@ -1,6 +1,6 @@
 # Your report page
 
-Your page is `away/<date>/<agent>.html`. The scaffold made it with your name, yaks, plan, and files. Only you edit it, apart from one marker the coordinator fills after your merge. The coordinator reads it and links it from `index.html`; don't edit `index.html`.
+Your page is `away/<agent>.html`. It's scratch for Jess's review; she deletes `away/` afterward, so anything that must last goes in commit messages, CLAUDE.md, or yaks. The scaffold made it with your name, yaks, plan, and files. Only you edit it, apart from one marker the coordinator fills after your merge. The coordinator reads it and links it from `index.html`; don't edit `index.html`.
 
 ## Sections
 

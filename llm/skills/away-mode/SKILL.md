@@ -9,15 +9,13 @@ Jess is away for hours. You are the coordinator. Keep your own context small: ev
 
 ## The report directory
 
-Everything the run produces for Jess lives in `away/<YYYY-MM-DD>/` at the repo root, committed to main:
+Everything the run produces for Jess lives in `away/` at the repo root, committed to main:
 
 - `index.html`: the overview. Coordinator-owned.
 - `<agent>.html`: one page per agent, named after the agent. Only that agent edits it while it works, so pages never conflict at merge.
-- `FORMAT.md`: the page format, copied from `FORMAT.md` beside this skill, with the date filled in. Every yak agent reads it.
+- `FORMAT.md`: the page format, copied from `FORMAT.md` beside this skill. Every yak agent reads it.
 
-More rounds on the same day add a "Round N" section to the same index and more pages to the same directory.
-
-GitHub Pages may publish main. The index says at its top that it's a local report, and the final summary asks Jess whether `away/` stays before a push.
+`away/` is scratch. Jess deletes it once she has reviewed it, so write for her review, not for posterity: no dates in paths, no archive structure. Anything worth keeping goes into commit messages, CLAUDE.md, or yaks, never only into `away/`. Another round adds a "Round N" section to the index and more pages beside it. If an `away/` from an earlier run is still there, ask Jess before replacing it.
 
 ## Agents
 
@@ -69,7 +67,7 @@ Fill in the brackets. Keep each prompt self-contained: the agent starts cold.
 
 > You are **[Name]**, a yak-shaving agent in the [repo] repo, part of an unattended run while Jess (she/her) is away. A coordinator merges your branch to main; you don't.
 >
-> First: `git merge --ff-only main`. Read CLAUDE.md, `away/[date]/FORMAT.md`, and your pre-filled page `away/[date]/[agent].html`. Keep that page updated per FORMAT.md; only you edit it, and updates ride in your own commits. The process rules in `away/[date]/index.html` bind you:
+> First: `git merge --ff-only main`. Read CLAUDE.md, `away/FORMAT.md`, and your pre-filled page `away/[agent].html`. Keep that page updated per FORMAT.md; only you edit it, and updates ride in your own commits. The process rules in `away/index.html` bind you:
 > - No push, `yx sync`, deploy, release, or Chrome.
 > - Don't edit the index, or the files named below as belonging to other agents.
 > - The full suite passes before you report merged-ready.
