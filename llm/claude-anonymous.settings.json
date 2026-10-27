@@ -3,5 +3,6 @@
     "type": "command",
     "command": "~/code/jessitron/dotfiles/bin/claude-statusline",
     "padding": 0
-  }
+  },
+  "theme": "dark-daltonized"
 }
